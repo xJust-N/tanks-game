@@ -1,0 +1,30 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>ru.itis.tanks</groupId>
+    <artifactId>tanks-game</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>server</module>
+        <module>client</module>
+        <module>common</module>
+    </modules>
+    <version>1.0.0</version>
+    <name>socket-chat</name>
+    <url>https://maven.apache.org</url>
+
+    <properties>
+        <lombok.version>1.18.42</lombok.version>
+        <jakarta.version>2.1.1</jakarta.version>
+        <slf4j.version>2.0.17</slf4j.version>
+        <logback.version>1.5.19</logback.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>
