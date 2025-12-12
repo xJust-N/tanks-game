@@ -15,11 +15,10 @@ public class Tank extends MovingObject implements Destroyable{
     @Setter
     private Gun gun;
 
-    public Tank(int hp, Gun gun, GameWorld world, long velocity,
+    public Tank(int hp, GameWorld world, long velocity,
                 Direction direction, long x, long y, int width, int height) {
         super(world, velocity, direction, x, y, width, height);
         this.hp = hp;
-        this.gun = gun;
     }
 
     @Override
@@ -36,9 +35,9 @@ public class Tank extends MovingObject implements Destroyable{
         }
     }
 
-    public Projectile shoot() {
-        if(gun != null)
-            return gun.getProjectile();
-        return null;
+    public void shoot() {
+        if(gun == null)
+            return;
+        world.addObject(gun.getProjectile());
     }
 }

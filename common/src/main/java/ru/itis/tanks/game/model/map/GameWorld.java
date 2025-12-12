@@ -5,6 +5,7 @@ import ru.itis.tanks.game.model.Collideable;
 import ru.itis.tanks.game.model.GameObject;
 import ru.itis.tanks.game.model.MovingObject;
 import ru.itis.tanks.game.model.Updatable;
+import ru.itis.tanks.game.model.impl.Tank;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +27,8 @@ public class GameWorld implements Updatable{
 
     private final List<Updatable> updatables;
 
+    private final List<Tank> tanks;
+
     /*
      *  Представляет собой сетку, в ячейках которых лежат объекты с коллизией,
      *  Первый Long - х координата, второй - y
@@ -38,6 +41,7 @@ public class GameWorld implements Updatable{
         this.height = height;
         allObjects = new ArrayList<>();
         updatables = new ArrayList<>();
+        tanks = new ArrayList<>();
         collisionGrid = new HashMap<>();
     }
 
@@ -78,19 +82,19 @@ public class GameWorld implements Updatable{
             updatables.add(updatable);
         if(object instanceof Collideable collideable)
             addToGrid(collideable, object.getX(), object.getY());
+        if(object instanceof Tank tank)
+            tanks.add(tank);
         allObjects.add(object);
     }
 
     public void removeObject(GameObject object) {
-        allObjects.remove(object);
-
-        if (object instanceof Updatable updatable) {
+        if (object instanceof Updatable updatable)
             updatables.remove(updatable);
-        }
-
-        if (object instanceof Collideable collideable) {
+        if (object instanceof Collideable)
             removeFromGrid(object.getX(), object.getY());
-        }
+        if(object instanceof Tank tank)
+            tanks.remove(tank);
+        allObjects.remove(object);
     }
 
     private void addToGrid(Collideable object, long x, long y){

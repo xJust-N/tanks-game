@@ -24,6 +24,10 @@ public class TankController {
         this.tank.setDirection(direction);
     }
 
+    public TankController(Tank tank) {
+        this(tank,  tank.getDirection());
+    }
+
     public void setDirection(Direction direction) {
         if (direction != null) {
             this.direction = direction;
@@ -41,7 +45,6 @@ public class TankController {
         tank.setMoving(false);
     }
     public void shoot() {
-        //todo
-        Projectile projectile = tank.shoot();
+        tank.shoot();
     }
 }
