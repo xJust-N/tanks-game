@@ -1,5 +1,5 @@
 package ru.itis.tanks.game.model;
 
-public interface Collideable {
+public interface Collideable extends GameObject{
 
 }

@@ -1,38 +1,25 @@
 package ru.itis.tanks.game.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 import ru.itis.tanks.game.model.impl.Texture;
 
-@AllArgsConstructor
-@Getter
-@Setter
-public abstract class GameObject {
+//Верхушка иерархии сущностей
+public interface GameObject {
 
-    //Позиция левого верхнего угла объекта
-    protected long x;
+    long getX();
 
-    protected long y;
+    long getY();
 
-    protected int width;
+    int getWidth();
 
-    protected int height;
+    int getHeight();
 
-    protected Texture texture;
+    void setX(long x);
 
-    public GameObject(long x, long y, int width, int height) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        this.texture = Texture.MISSING;
-    }
+    void setY(long y);
 
-    public boolean intersects(GameObject other) {
-        return x < other.x + other.getWidth() &&
-                x + getWidth() > other.x &&
-                y < other.y + other.getHeight() &&
-                y + height > other.y;
-    }
+    Texture getTexture();
+
+    void setTexture(Texture texture);
+
+    boolean intersects(GameObject other);
 }

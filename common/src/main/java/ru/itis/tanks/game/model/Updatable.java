@@ -1,7 +1,8 @@
 package ru.itis.tanks.game.model;
 
-public interface Updatable {
+public interface Updatable extends GameObject{
 
     void update(long delta);
 
+    void notifyUpdate();
 }

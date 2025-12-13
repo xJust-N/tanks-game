@@ -7,7 +7,7 @@ import java.awt.*;
 
 public class GameWindow extends JFrame {
 
-    private GameRenderer gameRenderer;
+    private final GameRenderer gameRenderer;
 
     public GameWindow(GameRenderer gameRenderer) throws HeadlessException {
         this.gameRenderer = gameRenderer;

@@ -9,7 +9,9 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 
 import static ru.itis.tanks.game.model.impl.Texture.*;
@@ -18,13 +20,7 @@ public class TextureManager {
 
     private static final String PATH_PREFIX = "/textures/";
 
-    private static final Map<Texture, String> FILES = Map.of(
-            PLAYER_TANK, "player_tank.png",
-            ENEMY_TANK, "enemy_tank.png",
-            ROCK, "rock.png",
-            STEEL, "steel.png",
-            GRASS, "grass.png"
-    );
+    private final Map<Texture, String> files = new EnumMap<>(Texture.class);
 
     private final Map<Texture, BufferedImage> images = new EnumMap<>(Texture.class);
 
@@ -33,14 +29,15 @@ public class TextureManager {
 
     public TextureManager() {
         createMissingTexture();
+        initPaths();
         loadImages();
     }
 
     public BufferedImage getTexture(Texture texture) {
         BufferedImage result = images.get(texture);
         //todo убрать это потом
-        if(result == null)
-            System.out.printf("Нету текстуры для %s%n", texture);
+//        if(result == null)
+//            System.out.printf("Нету текстуры для %s%n", texture);
         return result != null ? result : missingTexture;
     }
 
@@ -58,14 +55,30 @@ public class TextureManager {
         }
     }
 
+    private void initPaths() {
+        files.put(PLAYER_TANK, "player_tank.png");
+        files.put(ENEMY_TANK, "enemy_tank.png");
+        files.put(BULLET, "default_bullet.png");
+        files.put(ROCKET_BULLET, "rocket_bullet.png");
+        files.put(HP_POWERUP, "hp_powerup.png");
+        files.put(SPEED_POWERUP, "speed_powerup.png");
+        files.put(ROCKET_GUN_POWERUP, "rocket_gun_powerup.png");
+        files.put(GRASS, "grass.png");
+        files.put(ROCK, "rock.png");
+        files.put(STEEL, "steel.png");
+        files.put(COLLIDEABLE_GLASS, "collideable_grass.png");
+        files.put(WOOD, "wood_planks.png");
+        files.put(BRICK, "bricks.png");
+    }
+
     private void loadImages() {
-        for(Texture texture : FILES.keySet()) {
+        for(Texture texture : files.keySet()) {
             try {
                 //fixme хз так можно или нет но работает
-                URL resource = this.getClass().getResource(PATH_PREFIX + FILES.get(texture));
+                URL resource = this.getClass().getResource(PATH_PREFIX + files.get(texture));
                 if(resource == null)
                     throw new IOException("File %s for image %s not found"
-                            .formatted(FILES.get(texture), texture));
+                            .formatted(files.get(texture), texture));
                 BufferedImage img = ImageIO.read(resource);
                 images.put(texture, img);
             } catch (IOException e) {

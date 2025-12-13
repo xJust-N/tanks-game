@@ -17,4 +17,16 @@ public enum Direction {
         this.x = x;
         this.y = y;
     }
+
+    public Direction opposite() {
+        return ofValue(x * -1, y * -1);
+    }
+
+    public static Direction ofValue(int x, int y) {
+        for(Direction dir : Direction.values()) {
+            if(dir.x == x && dir.y == y)
+                return dir;
+        }
+        return null;
+    }
 }

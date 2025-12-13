@@ -1,28 +1,22 @@
 package ru.itis.tanks.game.model.impl;
 
-import java.util.Random;
-
 public enum Texture {
     MISSING(0),
     PLAYER_TANK(1),
     ENEMY_TANK(2),
-    ROCK(3),
-    STEEL(4),
-    GRASS(5);
-
-    private final int num;
+    BULLET(3),
+    ROCKET_BULLET(4),
+    HP_POWERUP(5),
+    SPEED_POWERUP(6),
+    ROCKET_GUN_POWERUP(7),
+    GRASS(8),
+    ROCK(9),
+    STEEL(10),
+    COLLIDEABLE_GLASS(11),
+    BRICK(12),
+    WOOD(13);
 
     Texture(int num) {
-        this.num = num;
-    }
-
-    Texture(){
-        this.num = -1;
-    }
-
-    public static Texture getRandomBlockTexture() {
-        Random r = new Random();
-        return fromInt(3 + r.nextInt(3));
     }
 
     public static Texture fromInt(int i) {
