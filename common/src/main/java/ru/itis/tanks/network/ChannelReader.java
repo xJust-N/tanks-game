@@ -1,4 +1,4 @@
-package ru.itis.tanks.protocol;
+package ru.itis.tanks.network;
 
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;

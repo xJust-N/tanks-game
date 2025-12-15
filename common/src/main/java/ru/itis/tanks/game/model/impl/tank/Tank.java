@@ -21,9 +21,9 @@ public class Tank extends MovingObject implements Destroyable {
 
     private static final int COLLIDE_DAMAGE = 10;
 
-    private final int maxHp;
-
     private final AtomicInteger hp;
+
+    private int maxHp;
 
     private long lastShootTime;
 
@@ -49,14 +49,14 @@ public class Tank extends MovingObject implements Destroyable {
 
 
     @Override
-    public synchronized void takeDamage(int damageValue) {
+    public void takeDamage(int damageValue) {
         int newHp = hp.addAndGet(-damageValue);
         if (newHp <= 0)
-            destroy();
+            remove();
     }
 
     @Override
-    public synchronized void destroy() {
+    public void remove() {
         world.removeObject(this);
         gun = null;
     }
@@ -64,6 +64,13 @@ public class Tank extends MovingObject implements Destroyable {
     @Override
     public int getHp() {
         return hp.get();
+    }
+
+    public void incHp(int hp) {
+        this.hp.addAndGet(hp);
+    }
+    public void incMaxHp(int maxHp) {
+        this.maxHp += maxHp;
     }
 
     public void shoot() {
@@ -78,13 +85,10 @@ public class Tank extends MovingObject implements Destroyable {
     }
 
     public long getReloadRemaining() {
-        long remaining = System.currentTimeMillis() - lastShootTime;
-        if (remaining - gun.getReloadDelay() > 0)
-            return remaining;
-        return 0;
+        long time = System.currentTimeMillis() - lastShootTime;
+        if (time >= gun.getReloadDelay())
+            return 0;
+        return gun.getReloadDelay() - time;
     }
 
-    public void takeCollideDamage() {
-        takeDamage(COLLIDE_DAMAGE);
-    }
 }

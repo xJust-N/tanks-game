@@ -1,4 +1,8 @@
 package ru.itis.tanks.game.model;
 
-public interface Collectable extends Collideable, GameObject {
+import ru.itis.tanks.game.model.impl.tank.Tank;
+
+public interface Collectable extends Collideable, Removable, GameObject {
+
+    void onTankCollect(Tank tank);
 }

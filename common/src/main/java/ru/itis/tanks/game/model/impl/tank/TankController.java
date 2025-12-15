@@ -30,12 +30,10 @@ public class TankController {
     }
 
     public void setDirection(Direction direction) {
-        synchronized (tank) {
             if (direction != null) {
                 this.direction = direction;
                 tank.setDirection(direction);
             }
-        }
     }
 
     public void enqueueCommand(Command command) {
@@ -43,14 +41,12 @@ public class TankController {
     }
 
     public void processCommands() {
-        synchronized (tank) {
-            Command command;
-            while ((command = commandQueue.poll()) != null) {
-                switch (command) {
-                    case Command.START_MOVING -> tank.setMoving(true);
-                    case Command.STOP_MOVING -> tank.setMoving(false);
-                    case Command.SHOOT -> tank.shoot();
-                }
+        Command command;
+        while ((command = commandQueue.poll()) != null) {
+            switch (command) {
+                case Command.START_MOVING -> tank.setMoving(true);
+                case Command.STOP_MOVING -> tank.setMoving(false);
+                case Command.SHOOT -> tank.shoot();
             }
         }
     }

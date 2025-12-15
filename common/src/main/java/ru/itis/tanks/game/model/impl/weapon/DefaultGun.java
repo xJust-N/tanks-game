@@ -8,13 +8,13 @@ public class DefaultGun extends Gun {
 
     private static final int DAMAGE = 15;
 
-    private static final int VELOCITY = 20;
+    private static final int VELOCITY = 30;
 
     private static final int BULLET_WIDTH = 10;
 
     private static final int BULLET_HEIGHT = 20;
 
-    private static final long SHOOT_DELAY_MILLIS = 700;
+    private static final long SHOOT_DELAY_MILLIS = 500;
 
     public DefaultGun(Tank tank) {
         super(tank);

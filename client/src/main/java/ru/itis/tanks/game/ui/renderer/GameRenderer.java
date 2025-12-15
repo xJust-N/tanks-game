@@ -75,7 +75,7 @@ public class GameRenderer extends JPanel implements GameEventListener {
         repaint();
     }
 
-    private void updateGraphicalComponents() {
+    public void updateGraphicalComponents() {
         graphicalComponents = gameWorld.getAllObjects()
                 .stream()
                 .map(GraphicalComponentFactory::createComponent)

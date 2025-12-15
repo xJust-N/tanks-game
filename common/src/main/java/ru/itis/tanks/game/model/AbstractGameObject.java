@@ -1,13 +1,11 @@
 package ru.itis.tanks.game.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import ru.itis.tanks.game.model.impl.Texture;
 
 @Getter
 @Setter
-@AllArgsConstructor
 public abstract class AbstractGameObject implements GameObject{
 
     //Позиция левого верхнего угла объекта

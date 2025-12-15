@@ -7,6 +7,10 @@ import java.awt.*;
 
 public class HealthBarOverlay implements Overlay {
 
+    private static final int WIDTH_DIVIDER = 100;
+
+    private static final int HEALTH_HEALTH_OFFSET_Y = 10;
+
     private final Destroyable obj;
 
     public HealthBarOverlay(Destroyable obj) {
@@ -15,10 +19,10 @@ public class HealthBarOverlay implements Overlay {
 
     @Override
     public void drawObjectOverlay(Graphics2D g2d) {
-        int healthBarWidth = obj.getWidth();
+        int healthBarWidth = obj.getWidth() * obj.getMaxHp() / WIDTH_DIVIDER;
         int healthBarHeight = 5;
-        int healthBarX = (int) obj.getX();
-        int healthBarY = (int) (obj.getY() - 10);
+        int healthBarX = (int) (obj.getX() - Math.abs(healthBarWidth - obj.getWidth()) / 2);
+        int healthBarY = (int) (obj.getY() - HEALTH_HEALTH_OFFSET_Y);
         g2d.setColor(Color.RED);
         g2d.fillRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
         int currentHealth = obj.getHp();

@@ -8,7 +8,7 @@ public class RocketGun extends Gun {
 
     private static final int DAMAGE = 90;
 
-    private static final int VELOCITY = 10;
+    private static final int VELOCITY = 12;
 
     private static final int BULLET_WIDTH = 20;
 

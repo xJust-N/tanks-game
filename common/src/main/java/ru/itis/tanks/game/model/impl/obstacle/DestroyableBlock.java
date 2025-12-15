@@ -32,11 +32,11 @@ public class DestroyableBlock extends CollideableBlock implements Destroyable {
     public void takeDamage(int damageValue) {
         int newHp = hp.addAndGet(-damageValue);
         if(newHp <= 0)
-            destroy();
+            remove();
     }
 
     @Override
-    public void destroy() {
+    public void remove() {
         world.removeObject(this);
     }
 

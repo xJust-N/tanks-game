@@ -1,13 +1,13 @@
 package ru.itis.tanks.game.model.impl.weapon;
 
 import lombok.Getter;
-import ru.itis.tanks.game.model.Destroyable;
 import ru.itis.tanks.game.model.MovingObject;
+import ru.itis.tanks.game.model.Removable;
 import ru.itis.tanks.game.model.impl.tank.Tank;
 import ru.itis.tanks.game.model.impl.Texture;
 
 @Getter
-public class Projectile extends MovingObject implements Destroyable {
+public class Projectile extends MovingObject implements Removable {
 
     private final int damage;
 
@@ -22,22 +22,7 @@ public class Projectile extends MovingObject implements Destroyable {
     }
 
     @Override
-    public void takeDamage(int damageValue) {
-        destroy();
-    }
-
-    @Override
-    public void destroy() {
+    public void remove() {
         world.removeObject(this);
-    }
-
-    @Override
-    public int getMaxHp() {
-        return 1;
-    }
-
-    @Override
-    public int getHp() {
-        return 1;
     }
 }
