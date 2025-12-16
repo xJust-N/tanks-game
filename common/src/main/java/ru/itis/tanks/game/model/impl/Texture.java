@@ -1,5 +1,8 @@
 package ru.itis.tanks.game.model.impl;
 
+import lombok.Getter;
+
+@Getter
 public enum Texture {
     MISSING(0),
     PLAYER_TANK(1),
@@ -16,7 +19,10 @@ public enum Texture {
     BRICK(12),
     WOOD(13);
 
+    private final int code;
+
     Texture(int num) {
+        code = num;
     }
 
     public static Texture fromInt(int i) {

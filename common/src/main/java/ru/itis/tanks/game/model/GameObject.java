@@ -5,17 +5,17 @@ import ru.itis.tanks.game.model.impl.Texture;
 //Верхушка иерархии сущностей
 public interface GameObject {
 
-    long getX();
+    int getX();
 
-    long getY();
+    int getY();
 
     int getWidth();
 
     int getHeight();
 
-    void setX(long x);
+    void setX(int x);
 
-    void setY(long y);
+    void setY(int y);
 
     Texture getTexture();
 

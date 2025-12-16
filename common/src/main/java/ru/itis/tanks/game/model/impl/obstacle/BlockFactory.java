@@ -22,7 +22,7 @@ public class BlockFactory {
 
     private static final Random RAND = new Random();
 
-    public static Block createRandomBlock(GameWorld world, long x, long y) {
+    public static Block createRandomBlock(GameWorld world, int x, int y) {
         double chance = RAND.nextDouble();
         double counter = 0d;
         if (chance <= (counter += NON_COLLIDE_BLOCK_CHANCE))
@@ -32,13 +32,13 @@ public class BlockFactory {
         return createDestroyableBlock(world, x, y);
     }
 
-    public static CollideableBlock createCollideableBlock(long x, long y) {
+    public static CollideableBlock createCollideableBlock(int x, int y) {
         CollideableBlock block = new CollideableBlock(x, y);
         block.setTexture(getTextureForCollideableBlock());
         return block;
     }
 
-    public static DestroyableBlock createDestroyableBlock(GameWorld world, long x, long y) {
+    public static DestroyableBlock createDestroyableBlock(GameWorld world, int x, int y) {
         double chance = RAND.nextDouble();
         DestroyableBlock block;
         if(chance <= WOOD_MATERIAL_CHANCE){
@@ -52,7 +52,7 @@ public class BlockFactory {
         return block;
     }
 
-    public static Block createNonCollideableBlock(long x, long y) {
+    public static Block createNonCollideableBlock(int x, int y) {
         Block nonCollideableBlock = new Block(x, y);
         nonCollideableBlock.setTexture(getTextureForNonCollideableBlock());
         return nonCollideableBlock;

@@ -19,18 +19,18 @@ import java.util.List;
 
 public class LocalMultiplayerGame implements Runnable, GameEventListener {
 
-    private static final long UPDATE_INTERVAL_MS = 16;
+    private static final int UPDATE_INTERVAL_MS = 16;
 
     @Getter
     private final GameWorld gameWorld;
 
     private final Thread gameThread = new Thread(this);
 
-    private final long updateInterval;
+    private final int updateInterval;
 
     private boolean isRunning;
 
-    public LocalMultiplayerGame(GameWorld gameWorld, long updateInterval) {
+    public LocalMultiplayerGame(GameWorld gameWorld, int updateInterval) {
         this.gameWorld = gameWorld;
         this.updateInterval = updateInterval;
         this.isRunning = false;
@@ -70,11 +70,12 @@ public class LocalMultiplayerGame implements Runnable, GameEventListener {
         }
     }
 
+    @Override
     public void run() {
-        long lastUpdateTime = System.currentTimeMillis();
+        int lastUpdateTime = System.currentTimeMillis();
         while (isRunning) {
-            long currentTime = System.currentTimeMillis();
-            long deltaTime = currentTime - lastUpdateTime;
+            int currentTime = System.currentTimeMillis();
+            int deltaTime = currentTime - lastUpdateTime;
 
             if (deltaTime >= updateInterval) {
                 update(deltaTime);
@@ -94,7 +95,7 @@ public class LocalMultiplayerGame implements Runnable, GameEventListener {
         isRunning = false;
     }
 
-    private void update(long delta) {
+    private void update(int delta) {
         gameWorld.getUpdatables().forEach(updatable -> {
             updatable.update(delta);
         });

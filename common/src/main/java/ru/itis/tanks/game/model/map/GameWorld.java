@@ -7,7 +7,10 @@ import ru.itis.tanks.game.model.map.updates.GameEvent;
 import ru.itis.tanks.game.model.map.updates.GameEventDispatcher;
 import ru.itis.tanks.game.model.map.updates.GameEventListener;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.HashMap;
 
 import static ru.itis.tanks.game.model.map.updates.GameEventType.*;
 
@@ -16,27 +19,28 @@ import static ru.itis.tanks.game.model.map.updates.GameEventType.*;
 @Getter
 public class GameWorld implements GameEventDispatcher {
 
-    private final long width;
+    private final int width;
 
-    private final long height;
+    private final int height;
 
     private final List<GameObject> allObjects;
 
     private final List<Updatable> updatables;
 
-    private final List<Tank> tanks;
+    private final Map<Integer, Tank> tanks;
 
     private final List<GameEventListener> listeners;
 
     private final CollisionHandler collisionHandler;
 
-    public GameWorld(long width, long height) {
+
+    public GameWorld(int width, int height) {
         this.width = width;
         this.height = height;
         listeners = new CopyOnWriteArrayList<>();
         allObjects = new CopyOnWriteArrayList<>();
         updatables = new CopyOnWriteArrayList<>();
-        tanks = new CopyOnWriteArrayList<>();
+        tanks = new ConcurrentHashMap<>();
         collisionHandler = new CollisionHandler(this);
     }
 
@@ -46,7 +50,7 @@ public class GameWorld implements GameEventDispatcher {
         if(object instanceof Collideable collideable)
             collisionHandler.addToGrid(collideable, object.getX(), object.getY());
         if(object instanceof Tank tank)
-            tanks.add(tank);
+            tanks.put(tank.getId(), tank);
         allObjects.add(object);
         notifyWorldUpdate(new GameEvent(object, ADDED_OBJECT));
     }
@@ -57,14 +61,14 @@ public class GameWorld implements GameEventDispatcher {
         if (object instanceof Collideable)
             collisionHandler.removeFromGrid(object.getX(), object.getY(), (Collideable) object);
         if(object instanceof Tank tank)
-            tanks.remove(tank);
+            tanks.remove(tank.getId());
         allObjects.remove(object);
         notifyWorldUpdate(new GameEvent(object, REMOVED_OBJECT));
         if(tanks.size() == 1)
-            notifyWorldUpdate(new GameEvent(tanks.getFirst(), GAME_OVER));
+            notifyWorldUpdate(new GameEvent(tanks.values().stream().findAny().get(), GAME_OVER));
     }
 
-    public void handleCollision(MovingObject obj, long oldX, long oldY){
+    public void handleCollision(MovingObject obj, int oldX, int oldY){
         collisionHandler.handleCollision(obj, oldX, oldY);
     }
 

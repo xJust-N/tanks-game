@@ -9,9 +9,9 @@ import ru.itis.tanks.game.model.impl.Texture;
 public abstract class AbstractGameObject implements GameObject{
 
     //Позиция левого верхнего угла объекта
-    protected long x;
+    protected int x;
 
-    protected long y;
+    protected int y;
 
     protected int width;
 
@@ -19,7 +19,7 @@ public abstract class AbstractGameObject implements GameObject{
 
     protected Texture texture;
 
-    public AbstractGameObject(Texture texture, long x, long y, int width, int height) {
+    public AbstractGameObject(int x, int y, int width, int height, Texture texture) {
         this.texture = texture;
         this.x = x;
         this.y = y;
@@ -27,8 +27,8 @@ public abstract class AbstractGameObject implements GameObject{
         this.height = height;
     }
 
-    public AbstractGameObject(long x, long y, int width, int height) {
-        this(Texture.MISSING, x, y, width, height);
+    public AbstractGameObject(int x, int y, int width, int height) {
+        this(x, y, width, height, Texture.MISSING);
     }
 
 

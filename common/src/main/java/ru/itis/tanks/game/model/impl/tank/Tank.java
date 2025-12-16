@@ -21,9 +21,11 @@ public class Tank extends MovingObject implements Destroyable {
 
     private static final int COLLIDE_DAMAGE = 10;
 
-    private final AtomicInteger hp;
+    private final int id;
 
     private int maxHp;
+
+    private final AtomicInteger hp;
 
     private long lastShootTime;
 
@@ -33,21 +35,25 @@ public class Tank extends MovingObject implements Destroyable {
     @Setter
     private Gun gun;
 
-    public Tank(int maxHp, GameWorld world, long velocity, Direction direction,
-                Texture texture, long x, long y, int width, int height) {
-        super(world, velocity, direction, false, texture, x, y, width, height);
-        this.hp = new AtomicInteger(maxHp);
-        this.maxHp = maxHp;
-        lastShootTime = 0;
-        currentPlayerTank = false;
+    public Tank(GameWorld world, int id, int maxHp, int velocity, Direction direction,
+                Texture texture, int x, int y, int width, int height) {
+        this(world, id, maxHp, maxHp, 0, null, velocity, direction, texture, x, y, width, height);
     }
 
-    public Tank(GameWorld world, long x, long y) {
-        this(DEFAULT_MAX_XP, world, DEFAULT_VELOCITY,
+    public Tank(GameWorld world, int x, int y) {
+        this(world, TankIdManager.getNextId(),DEFAULT_MAX_XP, DEFAULT_VELOCITY,
                 Direction.UP, Texture.PLAYER_TANK, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT);
     }
-
-
+    public Tank(GameWorld world, int id, int maxHp, int hp, long lastShootTime, Gun gun, int velocity, Direction direction,
+                Texture texture, int x, int y, int width, int height) {
+        super(world, velocity, direction, false, texture, x, y, width, height);
+        this.id = id;
+        this.hp = new AtomicInteger(hp);
+        this.maxHp = maxHp;
+        this.lastShootTime = lastShootTime;
+        this.gun = gun;
+        currentPlayerTank = false;
+    }
     @Override
     public void takeDamage(int damageValue) {
         int newHp = hp.addAndGet(-damageValue);

@@ -17,17 +17,17 @@ import static ru.itis.tanks.game.model.map.updates.GameEventType.MOVED_OBJECT;
 
 public class CollisionHandler {
 
-    private static final long GRID_SIZE = 32;
+    private static final int GRID_SIZE = 32;
 
     //Константа для отступа при столкновении, чтобы объекты не застревали друг в друге
-    private static final long COLLISION_OFFSET = 5;
+    private static final int COLLISION_OFFSET = 5;
 
     /*
      *  Представляет собой сетку, в ячейках которых лежат объекты с коллизией,
-     *  Первый Long - х координата, второй - y
+     *  Первый Int - х координата, второй - y
      *  Для проверки ближайших коллизий берется ячейка по координатам и ее соседние
      */
-    private final Map<Long, Map<Long, List<Collideable>>> collisionGrid;
+    private final Map<Integer, Map<Integer, List<Collideable>>> collisionGrid;
 
     private final GameEventDispatcher dispatcher;
 
@@ -36,9 +36,9 @@ public class CollisionHandler {
         collisionGrid = new ConcurrentHashMap<>();
     }
 
-    public void handleCollision(MovingObject obj, long oldX, long oldY) {
-        long oldGridX = getGridCoordinate(oldX);
-        long oldGridY = getGridCoordinate(oldY);
+    public void handleCollision(MovingObject obj, int oldX, int oldY) {
+        int oldGridX = getGridCoordinate(oldX);
+        int oldGridY = getGridCoordinate(oldY);
         List<Collideable> nearbyCollidables =
                 getNearbyCollidables(getGridCoordinate(obj.getX()), getGridCoordinate(obj.getY()));
         for (Collideable collideable : nearbyCollidables) {
@@ -56,9 +56,9 @@ public class CollisionHandler {
     }
 
 
-    void addToGrid(Collideable object, long x, long y) {
-        long gridX = getGridCoordinate(x);
-        long gridY = getGridCoordinate(y);
+    void addToGrid(Collideable object, int x, int y) {
+        int gridX = getGridCoordinate(x);
+        int gridY = getGridCoordinate(y);
 
         if (!collisionGrid.containsKey(gridX))
             collisionGrid.put(gridX, new HashMap<>());
@@ -69,11 +69,11 @@ public class CollisionHandler {
         collisionGrid.get(gridX).get(gridY).add(object);
     }
 
-    void removeFromGrid(long x, long y, Collideable obj) {
-        long gridX = getGridCoordinate(x);
-        long gridY = getGridCoordinate(y);
+    void removeFromGrid(int x, int y, Collideable obj) {
+        int gridX = getGridCoordinate(x);
+        int gridY = getGridCoordinate(y);
 
-        Map<Long, List<Collideable>> xCells = collisionGrid.get(gridX);
+        Map<Integer, List<Collideable>> xCells = collisionGrid.get(gridX);
         if (xCells != null) {
             List<Collideable> nearbyCollisions = xCells.get(gridY);
             if (nearbyCollisions != null) {
@@ -119,13 +119,13 @@ public class CollisionHandler {
             return;
         }
         Direction offsetDir = tank.getDirection().opposite();
-        long newX = tank.getX() + offsetDir.getX() * COLLISION_OFFSET;
-        long newY = tank.getY() + offsetDir.getY() * COLLISION_OFFSET;
+        int newX = tank.getX() + offsetDir.getX() * COLLISION_OFFSET;
+        int newY = tank.getY() + offsetDir.getY() * COLLISION_OFFSET;
         tank.setX(newX);
         tank.setY(newY);
     }
 
-    private List<Collideable> getNearbyCollidables(long gridX, long gridY) {
+    private List<Collideable> getNearbyCollidables(int gridX, int gridY) {
         List<Collideable> nearbyCollidables = new ArrayList<>();
         for (int dx = -1; dx <= 1; dx++)
             for (int dy = -1; dy <= 1; dy++)
@@ -134,8 +134,8 @@ public class CollisionHandler {
         return nearbyCollidables;
     }
 
-    private List<Collideable> getCollidablesInCell(long gridX, long gridY) {
-        Map<Long, List<Collideable>> collisions = collisionGrid.get(gridX);
+    private List<Collideable> getCollidablesInCell(int gridX, int gridY) {
+        Map<Integer, List<Collideable>> collisions = collisionGrid.get(gridX);
         if (collisions != null) {
             List<Collideable> collisionsList = collisions.get(gridY);
             if (collisionsList != null) {
@@ -145,7 +145,7 @@ public class CollisionHandler {
         return List.of();
     }
 
-    private long getGridCoordinate(long numb) {
+    private int getGridCoordinate(int numb) {
         return numb / GRID_SIZE;
     }
 }

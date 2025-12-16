@@ -18,8 +18,8 @@ public class ReloadOverlay implements Overlay {
     public void drawObjectOverlay(Graphics2D g2d) {
         if (tank.getGun() == null)
             return;
-        long currentReload = tank.getReloadRemaining();
-        long maxReload = tank.getGun().getReloadDelay();
+        int currentReload = Math.toIntExact(tank.getReloadRemaining());
+        int maxReload = tank.getGun().getReloadDelay();
         if (maxReload == 0 || currentReload <= 0)
             return;
         g2d.setColor(Color.RED);

@@ -67,7 +67,7 @@ public class GameRenderer extends JPanel implements GameEventListener {
         g2d.drawImage(img, tx, this);
     }
 
-    private int toInt(long x) {
+    private int toInt(int x) {
         return Math.toIntExact(x);
     }
 

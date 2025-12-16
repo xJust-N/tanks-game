@@ -30,19 +30,19 @@ public class GraphicalComponent {
         overlays = new ArrayList<>();
     }
 
-    public long getX() {
+    public int getX() {
         return object.getX();
     }
 
-    public long getY() {
+    public int getY() {
         return object.getY();
     }
 
-    public long getWidth() {
+    public int getWidth() {
         return object.getWidth();
     }
 
-    public long getHeight() {
+    public int getHeight() {
         return object.getHeight();
     }
 

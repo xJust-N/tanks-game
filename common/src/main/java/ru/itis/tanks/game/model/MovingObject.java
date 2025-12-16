@@ -15,7 +15,7 @@ public abstract class MovingObject extends AbstractGameObject implements Collide
 
     protected final GameWorld world;
 
-    protected long velocity;
+    protected int velocity;
 
     protected volatile Direction direction;
 
@@ -23,25 +23,25 @@ public abstract class MovingObject extends AbstractGameObject implements Collide
 
     private boolean readyToUpdate = false;
 
-    public MovingObject(GameWorld world, long velocity, Direction direction, boolean isMoving,
-                        Texture texture, long x, long y, int width, int height) {
-        super(texture, x, y, width, height);
+    public MovingObject(GameWorld world, int velocity, Direction direction, boolean isMoving,
+                        Texture texture, int x, int y, int width, int height) {
+        super(x, y, width, height, texture);
         this.world = world;
         this.velocity = velocity;
         this.direction = direction;
         this.isMoving = new AtomicBoolean(isMoving);
     }
 
-    public MovingObject(GameWorld world, long velocity, Direction direction,
-                        Texture texture, long x, long y, int width, int height) {
+    public MovingObject(GameWorld world, int velocity, Direction direction,
+                        Texture texture, int x, int y, int width, int height) {
         this(world, velocity, direction, true, texture, x, y, width, height);
     }
 
     @Override
-    public void update(long delta) {
+    public void update(int delta) {
         if (isMoving.get()) {
-            long oldX = x;
-            long oldY = y;
+            int oldX = x;
+            int oldY = y;
             x += direction.getX() * velocity * delta / VELOCITY_DIVIDER;
             y += direction.getY() * velocity * delta / VELOCITY_DIVIDER;
             if (x != oldX || y != oldY) {
