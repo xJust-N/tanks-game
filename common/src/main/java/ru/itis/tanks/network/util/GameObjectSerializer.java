@@ -15,6 +15,7 @@ import java.nio.ByteBuffer;
 
 import static ru.itis.tanks.network.util.GameObjectType.*;
 
+//TODO пересылка isMoving, команды и дельты или только координат с отдельным клиенским миром
 @NoArgsConstructor
 public class GameObjectSerializer {
 

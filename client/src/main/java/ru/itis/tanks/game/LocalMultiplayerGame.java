@@ -43,7 +43,7 @@ public class LocalMultiplayerGame implements Runnable, GameEventListener {
     public void startGame() {
         GameRenderer gameRenderer = new GameRenderer(gameWorld);
         GameWindow gameWindow = new GameWindow(gameRenderer);
-        List<TankController> tankControllers = gameWorld.getTanks().stream()
+        List<TankController> tankControllers = gameWorld.getTanks().values().stream()
                 .map(TankController::new)
                 .toList();
         gameWindow.addKeyListener(new TankKeyHandler(tankControllers.get(0)));
@@ -72,13 +72,13 @@ public class LocalMultiplayerGame implements Runnable, GameEventListener {
 
     @Override
     public void run() {
-        int lastUpdateTime = System.currentTimeMillis();
+        long lastUpdateTime = System.currentTimeMillis();
         while (isRunning) {
-            int currentTime = System.currentTimeMillis();
-            int deltaTime = currentTime - lastUpdateTime;
+            long currentTime = System.currentTimeMillis();
+            long deltaTime = currentTime - lastUpdateTime;
 
             if (deltaTime >= updateInterval) {
-                update(deltaTime);
+                update(Math.toIntExact(deltaTime));
                 lastUpdateTime = currentTime;
             }
             try {
