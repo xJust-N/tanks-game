@@ -3,8 +3,9 @@ package ru.itis.tanks.game.model.impl.tank;
 import lombok.Getter;
 import lombok.Setter;
 import ru.itis.tanks.game.model.*;
+import ru.itis.tanks.game.model.impl.IdManager;
 import ru.itis.tanks.game.model.impl.Texture;
-import ru.itis.tanks.game.model.map.GameWorld;
+import ru.itis.tanks.game.model.map.ServerGameWorld;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -21,8 +22,6 @@ public class Tank extends MovingObject implements Destroyable {
 
     private static final int COLLIDE_DAMAGE = 10;
 
-    private final int id;
-
     private int maxHp;
 
     private final AtomicInteger hp;
@@ -35,19 +34,18 @@ public class Tank extends MovingObject implements Destroyable {
     @Setter
     private Gun gun;
 
-    public Tank(GameWorld world, int id, int maxHp, int velocity, Direction direction,
+    public Tank(ServerGameWorld world, int id, int maxHp, int velocity, Direction direction,
                 Texture texture, int x, int y, int width, int height) {
         this(world, id, maxHp, maxHp, 0, null, velocity, direction, texture, x, y, width, height);
     }
 
-    public Tank(GameWorld world, int x, int y) {
-        this(world, TankIdManager.getNextId(),DEFAULT_MAX_XP, DEFAULT_VELOCITY,
+    public Tank(ServerGameWorld world, int x, int y) {
+        this(world, IdManager.getNextId(), DEFAULT_MAX_XP, DEFAULT_VELOCITY,
                 Direction.UP, Texture.PLAYER_TANK, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT);
     }
-    public Tank(GameWorld world, int id, int maxHp, int hp, long lastShootTime, Gun gun, int velocity, Direction direction,
+    public Tank(ServerGameWorld world, int id, int maxHp, int hp, long lastShootTime, Gun gun, int velocity, Direction direction,
                 Texture texture, int x, int y, int width, int height) {
-        super(world, velocity, direction, false, texture, x, y, width, height);
-        this.id = id;
+        super(world, id, velocity, direction, false, texture, x, y, width, height);
         this.hp = new AtomicInteger(hp);
         this.maxHp = maxHp;
         this.lastShootTime = lastShootTime;
@@ -96,5 +94,4 @@ public class Tank extends MovingObject implements Destroyable {
             return 0;
         return gun.getReloadDelay() - time;
     }
-
 }

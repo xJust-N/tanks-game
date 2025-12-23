@@ -1,44 +1,53 @@
 package ru.itis.tanks.network;
 
-import java.io.ByteArrayOutputStream;
+import lombok.RequiredArgsConstructor;
+import ru.itis.tanks.game.model.GameObject;
+import ru.itis.tanks.game.model.MovingObject;
+import ru.itis.tanks.game.model.map.ServerGameWorld;
+import ru.itis.tanks.network.util.GameObjectSerializer;
+
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
+import static ru.itis.tanks.network.ChannelMessageType.*;
+
+@RequiredArgsConstructor
 public class ChannelWriter {
 
     private static final byte[] START_BYTES = {(byte) 0xA, (byte) 0xB};
 
-    /*
-     * Запись объектов в канал
-     * Сначала записываются фиксированные служебные байты (2 байта),
-     * затем длина сообщения (4 байта),
-     * затем сам объект
-     */
+    private final GameObjectSerializer serializer;
 
-    public <T> void writeMessage(SocketChannel channel, T tObj) throws IOException {
-        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        try (ObjectOutputStream oos = new ObjectOutputStream(byteStream)) {
-            oos.writeObject(tObj);
-        }
-        byte[] bytes = byteStream.toByteArray();
+    public void write(SocketChannel channel, GameObject obj) throws IOException {
+        writeStartBytes(channel);
+        writeMessageType(channel, ENTITY_UPDATE);
+        channel.write(serializer.serialize(obj));
+    }
 
-        ByteBuffer headerBuffer = ByteBuffer.wrap(START_BYTES);
-        while (headerBuffer.hasRemaining()) {
-            channel.write(headerBuffer);
+    public void write(SocketChannel channel, ServerGameWorld world) throws IOException {
+        writeStartBytes(channel);
+        writeMessageType(channel, ALL_MAP);
+        for (GameObject obj : world.getAllObjects()) {
+            channel.write(serializer.serialize(obj));
         }
+    }
+    public void writePosition(SocketChannel channel, MovingObject obj) throws IOException {
+        writeStartBytes(channel);
+        writeMessageType(channel, COORDINATE_UPDATE);
+        ByteBuffer buffer = ByteBuffer.allocate(4 + 4);
+        buffer.putInt(obj.getX());
+        buffer.putInt(obj.getY());
+        buffer.putInt(obj.getDirection().getX());
+        buffer.putInt(obj.getDirection().getY());
+        buffer.flip();
+        channel.write(buffer);
+    }
 
-        ByteBuffer lengthBuffer = ByteBuffer.allocate(4);
-        lengthBuffer.putInt(bytes.length);
-        lengthBuffer.flip();
-        while (lengthBuffer.hasRemaining()) {
-            channel.write(lengthBuffer);
-        }
-
-        ByteBuffer dataBuffer = ByteBuffer.wrap(bytes);
-        while (dataBuffer.hasRemaining()) {
-            channel.write(dataBuffer);
-        }
+    private void writeStartBytes(SocketChannel channel) throws IOException {
+        channel.write(ByteBuffer.wrap(START_BYTES));
+    }
+    private void writeMessageType(SocketChannel channel, ChannelMessageType type) throws IOException {
+        channel.write(ByteBuffer.wrap(new byte[]{(byte) type.getCode()}));
     }
 }

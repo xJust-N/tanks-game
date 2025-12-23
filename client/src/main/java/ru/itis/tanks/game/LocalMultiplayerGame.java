@@ -7,42 +7,46 @@ import ru.itis.tanks.game.controller.TankKeyHandler;
 import ru.itis.tanks.game.model.impl.Texture;
 import ru.itis.tanks.game.model.impl.tank.Tank;
 import ru.itis.tanks.game.model.impl.tank.TankController;
-import ru.itis.tanks.game.model.map.GameWorld;
+import ru.itis.tanks.game.model.map.ServerGameWorld;
 import ru.itis.tanks.game.model.map.GameWorldGenerator;
 import ru.itis.tanks.game.model.map.updates.GameEvent;
 import ru.itis.tanks.game.model.map.updates.GameEventListener;
 import ru.itis.tanks.game.model.map.updates.GameEventType;
 import ru.itis.tanks.game.ui.GameWindow;
-import ru.itis.tanks.game.ui.renderer.GameRenderer;
+import ru.itis.tanks.game.ui.panels.GameWorldPanel;
 
 import java.util.List;
 
-public class LocalMultiplayerGame implements Runnable, GameEventListener {
+public class LocalMultiplayerGame implements GameEventListener {
 
     private static final int UPDATE_INTERVAL_MS = 16;
 
     @Getter
-    private final GameWorld gameWorld;
+    private final ServerGameWorld gameWorld;
 
-    private final Thread gameThread = new Thread(this);
+    private final GameWindow gameWindow;
+
+    private final Thread windowThread;
 
     private final int updateInterval;
 
     private boolean isRunning;
 
-    public LocalMultiplayerGame(GameWorld gameWorld, int updateInterval) {
+    public LocalMultiplayerGame(ServerGameWorld gameWorld, GameWindow window, int updateInterval) {
         this.gameWorld = gameWorld;
+        this.gameWindow = window;
         this.updateInterval = updateInterval;
         this.isRunning = false;
+        windowThread = new Thread(this::gameWindowUpdate);
     }
 
-    public static void main(String[] args) {
-        new LocalMultiplayerGame(GameWorldGenerator.generate(), UPDATE_INTERVAL_MS).startGame();
+    public LocalMultiplayerGame(GameWindow window){
+        this(GameWorldGenerator.generate(), window, UPDATE_INTERVAL_MS);
     }
 
     public void startGame() {
-        GameRenderer gameRenderer = new GameRenderer(gameWorld);
-        GameWindow gameWindow = new GameWindow(gameRenderer);
+        GameWorldPanel gameRenderer = new GameWorldPanel(gameWorld);
+        gameWindow.changePanel(gameRenderer);
         List<TankController> tankControllers = gameWorld.getTanks().values().stream()
                 .map(TankController::new)
                 .toList();
@@ -57,30 +61,18 @@ public class LocalMultiplayerGame implements Runnable, GameEventListener {
             new AITank(tankControllers.get(i)).start();
         }
         gameWorld.addWorldUpdateListener(gameRenderer);
-        gameThread.start();
         isRunning = true;
-        while (isRunning) {
-            gameWindow.updateGameWorld();
-            tankControllers.forEach(TankController::processCommands);
-            try {
-                Thread.sleep(updateInterval);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    @Override
-    public void run() {
+        windowThread.start();
+        gameRenderer.updateGraphicalComponents();
         long lastUpdateTime = System.currentTimeMillis();
         while (isRunning) {
             long currentTime = System.currentTimeMillis();
             long deltaTime = currentTime - lastUpdateTime;
-
             if (deltaTime >= updateInterval) {
                 update(Math.toIntExact(deltaTime));
                 lastUpdateTime = currentTime;
             }
+            tankControllers.forEach(TankController::processCommands);
             try {
                 Thread.sleep(updateInterval);
             } catch (InterruptedException e) {
@@ -90,8 +82,19 @@ public class LocalMultiplayerGame implements Runnable, GameEventListener {
         }
     }
 
+    private void gameWindowUpdate(){
+        while(isRunning){
+            gameWindow.update();
+            try{
+                Thread.sleep(updateInterval);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+    }
+
     public void stop(){
-        gameThread.interrupt();
         isRunning = false;
     }
 

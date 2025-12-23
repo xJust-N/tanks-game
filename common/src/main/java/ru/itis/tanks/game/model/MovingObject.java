@@ -2,8 +2,9 @@ package ru.itis.tanks.game.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import ru.itis.tanks.game.model.impl.IdManager;
 import ru.itis.tanks.game.model.impl.Texture;
-import ru.itis.tanks.game.model.map.GameWorld;
+import ru.itis.tanks.game.model.map.ServerGameWorld;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -13,7 +14,7 @@ public abstract class MovingObject extends AbstractGameObject implements Collide
 
     protected static final int VELOCITY_DIVIDER = 64;
 
-    protected final GameWorld world;
+    protected final ServerGameWorld world;
 
     protected int velocity;
 
@@ -21,20 +22,23 @@ public abstract class MovingObject extends AbstractGameObject implements Collide
 
     protected AtomicBoolean isMoving;
 
+    private final int id;
+
     private boolean readyToUpdate = false;
 
-    public MovingObject(GameWorld world, int velocity, Direction direction, boolean isMoving,
+    public MovingObject(ServerGameWorld world, int id, int velocity, Direction direction, boolean isMoving,
                         Texture texture, int x, int y, int width, int height) {
         super(x, y, width, height, texture);
         this.world = world;
+        this.id = id;
         this.velocity = velocity;
         this.direction = direction;
         this.isMoving = new AtomicBoolean(isMoving);
     }
 
-    public MovingObject(GameWorld world, int velocity, Direction direction,
+    public MovingObject(ServerGameWorld world, int velocity, Direction direction,
                         Texture texture, int x, int y, int width, int height) {
-        this(world, velocity, direction, true, texture, x, y, width, height);
+        this(world, IdManager.getNextId(), velocity, direction, true, texture, x, y, width, height);
     }
 
     @Override
@@ -50,8 +54,11 @@ public abstract class MovingObject extends AbstractGameObject implements Collide
         }
         readyToUpdate = false;
     }
-
     public void setMoving(boolean isMoving) {
         this.isMoving.set(isMoving);
+    }
+
+    public boolean isMoving(){
+        return isMoving.get();
     }
 }

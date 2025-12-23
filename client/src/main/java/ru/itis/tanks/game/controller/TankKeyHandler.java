@@ -37,15 +37,19 @@ public class TankKeyHandler extends KeyAdapter implements KeyListener {
         }
     }
 
+    //TODO танк не перестает останавливаться если какая то кнопка отпущена,
+    // движется в направлении последней нажатой кнопки
+    private boolean isMovementKeyPressed(KeyEvent e) {
+        return e.getKeyCode() == KeyEvent.VK_W || 
+               e.getKeyCode() == KeyEvent.VK_S || 
+               e.getKeyCode() == KeyEvent.VK_A || 
+               e.getKeyCode() == KeyEvent.VK_D;
+    }
+
     @Override
     public void keyReleased(KeyEvent e) {
-        switch (e.getKeyCode()) {
-            case KeyEvent.VK_W:
-            case KeyEvent.VK_S:
-            case KeyEvent.VK_A:
-            case KeyEvent.VK_D:
-                tankController.enqueueCommand(Command.STOP_MOVING);
-                break;
+        if (isMovementKeyPressed(e)) {
+            tankController.enqueueCommand(Command.STOP_MOVING);
         }
     }
 }

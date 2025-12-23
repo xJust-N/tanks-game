@@ -1,11 +1,11 @@
-package ru.itis.tanks.game.ui.renderer.graphics;
+package ru.itis.tanks.game.ui.graphics;
 
 import lombok.Getter;
 import lombok.Setter;
 import ru.itis.tanks.game.model.Direction;
 import ru.itis.tanks.game.model.GameObject;
 import ru.itis.tanks.game.model.MovingObject;
-import ru.itis.tanks.game.ui.renderer.graphics.overlays.Overlay;
+import ru.itis.tanks.game.ui.graphics.overlays.Overlay;
 
 import java.awt.Image;
 import java.util.ArrayList;

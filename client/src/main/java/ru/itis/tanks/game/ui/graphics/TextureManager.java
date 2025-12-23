@@ -1,4 +1,4 @@
-package ru.itis.tanks.game.ui.renderer.graphics;
+package ru.itis.tanks.game.ui.graphics;
 
 import lombok.Getter;
 import ru.itis.tanks.game.model.impl.Texture;
@@ -9,9 +9,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Map;
 
 import static ru.itis.tanks.game.model.impl.Texture.*;

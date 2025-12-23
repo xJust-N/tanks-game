@@ -1,12 +1,6 @@
 package ru.itis.tanks.network.util;
 
 import lombok.Getter;
-import ru.itis.tanks.game.model.GameObject;
-import ru.itis.tanks.game.model.impl.obstacle.*;
-import ru.itis.tanks.game.model.impl.tank.Tank;
-import ru.itis.tanks.game.model.impl.weapon.DefaultGun;
-import ru.itis.tanks.game.model.impl.weapon.Projectile;
-import ru.itis.tanks.game.model.impl.weapon.RocketGun;
 
 //Enum для определения типа сущности при десериализации
 @Getter

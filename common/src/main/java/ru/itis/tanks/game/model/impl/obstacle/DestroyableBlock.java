@@ -3,7 +3,7 @@ package ru.itis.tanks.game.model.impl.obstacle;
 import lombok.Getter;
 import ru.itis.tanks.game.model.Destroyable;
 import ru.itis.tanks.game.model.impl.Texture;
-import ru.itis.tanks.game.model.map.GameWorld;
+import ru.itis.tanks.game.model.map.ServerGameWorld;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -11,21 +11,21 @@ public class DestroyableBlock extends CollideableBlock implements Destroyable {
 
     private static final int DEFAULT_MAX_HP = 250;
 
-    private final GameWorld world;
+    private final ServerGameWorld world;
 
     @Getter
     private final int maxHp;
 
     private final AtomicInteger hp;
 
-    public DestroyableBlock(GameWorld world, int maxHp, int x, int y) {
+    public DestroyableBlock(ServerGameWorld world, int maxHp, int x, int y) {
         super(x, y);
         this.maxHp = maxHp;
         hp = new AtomicInteger(maxHp);
         this.world = world;
     }
 
-    public DestroyableBlock(GameWorld world, int maxHp, int hp, int x, int y,
+    public DestroyableBlock(ServerGameWorld world, int maxHp, int hp, int x, int y,
                             int width, int height, Texture texture) {
         super(x, y, width, height, texture);
         this.world = world;

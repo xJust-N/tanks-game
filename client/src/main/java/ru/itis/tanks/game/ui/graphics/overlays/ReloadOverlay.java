@@ -1,4 +1,4 @@
-package ru.itis.tanks.game.ui.renderer.graphics.overlays;
+package ru.itis.tanks.game.ui.graphics.overlays;
 
 import lombok.AllArgsConstructor;
 import ru.itis.tanks.game.model.impl.tank.Tank;

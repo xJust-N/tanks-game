@@ -5,8 +5,10 @@ import lombok.Getter;
 //TODO
 @Getter
 public enum ChannelMessageType {
-    JOIN(0),
-    UPDATE(1);
+    JOIN_REQUEST(0),
+    ALL_MAP(1),
+    ENTITY_UPDATE(2),
+    COORDINATE_UPDATE(3);
 
     private final int code;
 

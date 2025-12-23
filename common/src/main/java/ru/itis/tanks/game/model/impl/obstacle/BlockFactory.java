@@ -1,7 +1,7 @@
 package ru.itis.tanks.game.model.impl.obstacle;
 
 import ru.itis.tanks.game.model.impl.Texture;
-import ru.itis.tanks.game.model.map.GameWorld;
+import ru.itis.tanks.game.model.map.ServerGameWorld;
 
 import java.util.List;
 import java.util.Random;
@@ -22,7 +22,7 @@ public class BlockFactory {
 
     private static final Random RAND = new Random();
 
-    public static Block createRandomBlock(GameWorld world, int x, int y) {
+    public static Block createRandomBlock(ServerGameWorld world, int x, int y) {
         double chance = RAND.nextDouble();
         double counter = 0d;
         if (chance <= (counter += NON_COLLIDE_BLOCK_CHANCE))
@@ -38,7 +38,7 @@ public class BlockFactory {
         return block;
     }
 
-    public static DestroyableBlock createDestroyableBlock(GameWorld world, int x, int y) {
+    public static DestroyableBlock createDestroyableBlock(ServerGameWorld world, int x, int y) {
         double chance = RAND.nextDouble();
         DestroyableBlock block;
         if(chance <= WOOD_MATERIAL_CHANCE){

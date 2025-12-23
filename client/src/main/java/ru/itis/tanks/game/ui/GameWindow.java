@@ -1,32 +1,44 @@
 package ru.itis.tanks.game.ui;
 
-import ru.itis.tanks.game.ui.renderer.GameRenderer;
-
 import javax.swing.*;
-import java.awt.*;
+import java.awt.HeadlessException;
 
 public class GameWindow extends JFrame {
 
-    private final GameRenderer gameRenderer;
+    private JPanel currentPanel;
 
-    public GameWindow(GameRenderer gameRenderer) throws HeadlessException {
-        this.gameRenderer = gameRenderer;
-        initializeWindow();
+    public GameWindow(JPanel currentPanel) throws HeadlessException {
+        this.currentPanel = currentPanel;
+        init();
     }
 
-    private void initializeWindow() {
+    private void init() {
         setTitle("Tanks Game");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
-
-        add(gameRenderer);
+        add(currentPanel);
         pack();
-
         setLocationRelativeTo(null);
+        setFocusable(true);
+        requestFocus();
         setVisible(true);
     }
 
-    public void updateGameWorld() {
-        gameRenderer.render();
+    public void update() {
+        if (currentPanel != null) {
+            currentPanel.repaint();
+        }
+    }
+
+    public void changePanel(JPanel panel) {
+        currentPanel = panel;
+        setContentPane(currentPanel);
+        revalidate();
+        repaint();
+        pack();
+    }
+    
+    public void showError(String message) {
+        JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
 }

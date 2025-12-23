@@ -1,9 +1,9 @@
-package ru.itis.tanks.game.ui.renderer.graphics;
+package ru.itis.tanks.game.ui.graphics;
 
 import ru.itis.tanks.game.model.GameObject;
 import ru.itis.tanks.game.model.impl.tank.Tank;
-import ru.itis.tanks.game.ui.renderer.graphics.overlays.HealthBarOverlay;
-import ru.itis.tanks.game.ui.renderer.graphics.overlays.ReloadOverlay;
+import ru.itis.tanks.game.ui.graphics.overlays.HealthBarOverlay;
+import ru.itis.tanks.game.ui.graphics.overlays.ReloadOverlay;
 
 public class GraphicalComponentFactory {
 

@@ -1,24 +1,24 @@
-package ru.itis.tanks.game.ui.renderer;
+package ru.itis.tanks.game.ui.panels;
 
-import ru.itis.tanks.game.model.map.GameWorld;
+import ru.itis.tanks.game.model.map.ServerGameWorld;
 import ru.itis.tanks.game.model.map.updates.GameEvent;
 import ru.itis.tanks.game.model.map.updates.GameEventListener;
 import ru.itis.tanks.game.model.map.updates.GameEventType;
-import ru.itis.tanks.game.ui.renderer.graphics.GraphicalComponent;
-import ru.itis.tanks.game.ui.renderer.graphics.GraphicalComponentFactory;
+import ru.itis.tanks.game.ui.graphics.GraphicalComponent;
+import ru.itis.tanks.game.ui.graphics.GraphicalComponentFactory;
 
-import javax.swing.JPanel;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.util.List;
 
-public class GameRenderer extends JPanel implements GameEventListener {
+public class GameWorldPanel extends JPanel implements GameEventListener {
 
-    private final GameWorld gameWorld;
+    private final ServerGameWorld gameWorld;
 
     private List<GraphicalComponent> graphicalComponents;
 
-    public GameRenderer(GameWorld gameWorld) {
+    public GameWorldPanel(ServerGameWorld gameWorld) {
         this.gameWorld = gameWorld;
         init();
     }
@@ -27,6 +27,7 @@ public class GameRenderer extends JPanel implements GameEventListener {
         setPreferredSize(
                 new Dimension(toInt(gameWorld.getWidth()), toInt(gameWorld.getHeight()))
         );
+        setVisible(true);
         setBackground(Color.GRAY);
         updateGraphicalComponents();
     }
