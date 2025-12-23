@@ -2,6 +2,7 @@ package ru.itis.tanks.game.controller;
 
 import ru.itis.tanks.game.model.Direction;
 import ru.itis.tanks.game.model.impl.tank.Command;
+import ru.itis.tanks.game.model.impl.tank.ServerTankController;
 import ru.itis.tanks.game.model.impl.tank.TankController;
 
 import java.awt.event.KeyEvent;

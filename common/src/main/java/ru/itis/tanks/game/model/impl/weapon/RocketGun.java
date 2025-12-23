@@ -3,7 +3,7 @@ package ru.itis.tanks.game.model.impl.weapon;
 import ru.itis.tanks.game.model.Gun;
 import ru.itis.tanks.game.model.impl.tank.Tank;
 import ru.itis.tanks.game.model.impl.Texture;
-import ru.itis.tanks.game.model.map.ServerGameWorld;
+import ru.itis.tanks.game.model.map.GameWorld;
 
 public class RocketGun extends Gun {
 
@@ -21,7 +21,7 @@ public class RocketGun extends Gun {
         super(tank);
     }
 
-    public RocketGun(ServerGameWorld world, int ownerId) {
+    public RocketGun(GameWorld world, int ownerId) {
         this(world.getTanks().get(ownerId));
     }
 

@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.itis.tanks.game.model.impl.IdManager;
 import ru.itis.tanks.game.model.impl.Texture;
-import ru.itis.tanks.game.model.map.ServerGameWorld;
+import ru.itis.tanks.game.model.map.GameWorld;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -14,7 +14,7 @@ public abstract class MovingObject extends AbstractGameObject implements Collide
 
     protected static final int VELOCITY_DIVIDER = 64;
 
-    protected final ServerGameWorld world;
+    protected final GameWorld world;
 
     protected int velocity;
 
@@ -26,7 +26,7 @@ public abstract class MovingObject extends AbstractGameObject implements Collide
 
     private boolean readyToUpdate = false;
 
-    public MovingObject(ServerGameWorld world, int id, int velocity, Direction direction, boolean isMoving,
+    public MovingObject(GameWorld world, int id, int velocity, Direction direction, boolean isMoving,
                         Texture texture, int x, int y, int width, int height) {
         super(x, y, width, height, texture);
         this.world = world;
@@ -36,7 +36,7 @@ public abstract class MovingObject extends AbstractGameObject implements Collide
         this.isMoving = new AtomicBoolean(isMoving);
     }
 
-    public MovingObject(ServerGameWorld world, int velocity, Direction direction,
+    public MovingObject(GameWorld world, int velocity, Direction direction,
                         Texture texture, int x, int y, int width, int height) {
         this(world, IdManager.getNextId(), velocity, direction, true, texture, x, y, width, height);
     }

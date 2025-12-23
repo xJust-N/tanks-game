@@ -3,7 +3,7 @@ package ru.itis.tanks.game.controller;
 import lombok.SneakyThrows;
 import ru.itis.tanks.game.model.Direction;
 import ru.itis.tanks.game.model.impl.tank.Command;
-import ru.itis.tanks.game.model.impl.tank.TankController;
+import ru.itis.tanks.game.model.impl.tank.ServerTankController;
 
 import java.util.Random;
 
@@ -15,11 +15,11 @@ public class AITank implements Runnable {
 
     private final Random rand = new Random();
 
-    private final TankController controller;
+    private final ServerTankController controller;
 
     private Thread aiThread;
 
-    public AITank(TankController controller) {
+    public AITank(ServerTankController controller) {
         this.controller = controller;
     }
 

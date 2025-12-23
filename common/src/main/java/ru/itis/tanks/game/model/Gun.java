@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import ru.itis.tanks.game.model.impl.weapon.Projectile;
 import ru.itis.tanks.game.model.impl.tank.Tank;
-import ru.itis.tanks.game.model.map.ServerGameWorld;
+import ru.itis.tanks.game.model.map.GameWorld;
 
 //Определяет какой тип снаряда вылетит
 //По сути - паттерн стратегия для произведения выстрела
@@ -16,7 +16,7 @@ public abstract class Gun{
 
     protected final Tank tank;
 
-    public Gun(ServerGameWorld world, int ownerId){
+    public Gun(GameWorld world, int ownerId){
         this.tank = world.getTanks().get(ownerId);
     }
 

@@ -1,6 +1,7 @@
 package ru.itis.tanks.game.ui.panels;
 
-import ru.itis.tanks.game.model.map.ServerGameWorld;
+import ru.itis.tanks.game.model.GameObject;
+import ru.itis.tanks.game.model.map.GameWorld;
 import ru.itis.tanks.game.model.map.updates.GameEvent;
 import ru.itis.tanks.game.model.map.updates.GameEventListener;
 import ru.itis.tanks.game.model.map.updates.GameEventType;
@@ -10,22 +11,28 @@ import ru.itis.tanks.game.ui.graphics.GraphicalComponentFactory;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.util.ArrayList;
 import java.util.List;
 
 public class GameWorldPanel extends JPanel implements GameEventListener {
 
-    private final ServerGameWorld gameWorld;
+    private final List<GameObject> allGameObjects;
 
     private List<GraphicalComponent> graphicalComponents;
 
-    public GameWorldPanel(ServerGameWorld gameWorld) {
-        this.gameWorld = gameWorld;
-        init();
+    private final int width;
+
+    private final int height;
+
+    public GameWorldPanel(List<GameObject> gameObjects, int w, int h) {
+        this.allGameObjects = gameObjects;
+        this.width = w;
+        this.height = h;
     }
 
     private void init() {
         setPreferredSize(
-                new Dimension(toInt(gameWorld.getWidth()), toInt(gameWorld.getHeight()))
+                new Dimension(width, height)
         );
         setVisible(true);
         setBackground(Color.GRAY);
@@ -77,7 +84,7 @@ public class GameWorldPanel extends JPanel implements GameEventListener {
     }
 
     public void updateGraphicalComponents() {
-        graphicalComponents = gameWorld.getAllObjects()
+        graphicalComponents = allGameObjects
                 .stream()
                 .map(GraphicalComponentFactory::createComponent)
                 .toList();

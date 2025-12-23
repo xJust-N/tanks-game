@@ -5,7 +5,7 @@ import lombok.Setter;
 import ru.itis.tanks.game.model.*;
 import ru.itis.tanks.game.model.impl.IdManager;
 import ru.itis.tanks.game.model.impl.Texture;
-import ru.itis.tanks.game.model.map.ServerGameWorld;
+import ru.itis.tanks.game.model.map.GameWorld;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -28,22 +28,24 @@ public class Tank extends MovingObject implements Destroyable {
 
     private long lastShootTime;
 
+    private final String username;
+
     @Setter
     private boolean currentPlayerTank;
 
     @Setter
     private Gun gun;
 
-    public Tank(ServerGameWorld world, int id, int maxHp, int velocity, Direction direction,
+    public Tank(GameWorld world, int id, int maxHp, int velocity, Direction direction,
                 Texture texture, int x, int y, int width, int height) {
         this(world, id, maxHp, maxHp, 0, null, velocity, direction, texture, x, y, width, height);
     }
 
-    public Tank(ServerGameWorld world, int x, int y) {
+    public Tank(GameWorld world, int x, int y) {
         this(world, IdManager.getNextId(), DEFAULT_MAX_XP, DEFAULT_VELOCITY,
                 Direction.UP, Texture.PLAYER_TANK, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT);
     }
-    public Tank(ServerGameWorld world, int id, int maxHp, int hp, long lastShootTime, Gun gun, int velocity, Direction direction,
+    public Tank(GameWorld world, int id, int maxHp, int hp, long lastShootTime, Gun gun, int velocity, Direction direction,
                 Texture texture, int x, int y, int width, int height) {
         super(world, id, velocity, direction, false, texture, x, y, width, height);
         this.hp = new AtomicInteger(hp);
@@ -51,6 +53,7 @@ public class Tank extends MovingObject implements Destroyable {
         this.lastShootTime = lastShootTime;
         this.gun = gun;
         currentPlayerTank = false;
+        this.username = "bot";
     }
     @Override
     public void takeDamage(int damageValue) {

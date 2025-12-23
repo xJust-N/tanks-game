@@ -21,8 +21,8 @@ public class GameWorldGenerator {
 
     private static final Random random = new Random();
 
-    public static ServerGameWorld generate() {
-        ServerGameWorld world = new ServerGameWorld(WORLD_WIDTH, WORLD_HEIGHT);
+    public static GameWorld generate() {
+        GameWorld world = new GameWorld(WORLD_WIDTH, WORLD_HEIGHT);
         createBorderWalls(world);
         generateObstacles(world);
         int tankCount = 5 + random.nextInt(2);
@@ -35,7 +35,7 @@ public class GameWorldGenerator {
         return world;
     }
 
-    private static void createRandomTank(ServerGameWorld world, int index) {
+    private static void createRandomTank(GameWorld world, int index) {
         int x, y;
         int attempts = 0;
         int maxAttempts = 100;
@@ -60,7 +60,7 @@ public class GameWorldGenerator {
         world.addObject(tank);
     }
 
-    private static void generateObstacles(ServerGameWorld world) {
+    private static void generateObstacles(GameWorld world) {
         int totalBlocks = 100 + random.nextInt(50);
         int placedBlocks = 0;
         int attempts = 0;
@@ -78,7 +78,7 @@ public class GameWorldGenerator {
         }
     }
 
-    private static void createBorderWalls(ServerGameWorld world) {
+    private static void createBorderWalls(GameWorld world) {
         for (int x = 0; x < WORLD_WIDTH; x += BLOCK_SIZE) {
             world.addObject(BlockFactory.createCollideableBlock(x, 0));
             world.addObject(BlockFactory.createCollideableBlock(x, WORLD_HEIGHT - BLOCK_SIZE));
@@ -89,7 +89,7 @@ public class GameWorldGenerator {
         }
     }
 
-    private static boolean isOverlapping(ServerGameWorld world, int x, int y, int width, int height) {
+    private static boolean isOverlapping(GameWorld world, int x, int y, int width, int height) {
         return world.getAllObjects().stream().anyMatch(obj ->
                 obj.getX() < x + width &&
                         obj.getX() + obj.getWidth() > x &&

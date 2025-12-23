@@ -1,13 +1,13 @@
 package ru.itis.tanks.game.model;
 
 import ru.itis.tanks.game.model.impl.Texture;
-import ru.itis.tanks.game.model.map.ServerGameWorld;
+import ru.itis.tanks.game.model.map.GameWorld;
 
 public abstract class AbstractCollectable extends AbstractGameObject implements Collectable {
 
-    protected final ServerGameWorld world;
+    protected final GameWorld world;
 
-    public AbstractCollectable(ServerGameWorld world, int x, int y, int width, int height, Texture texture) {
+    public AbstractCollectable(GameWorld world, int x, int y, int width, int height, Texture texture) {
         super(x, y, width, height, texture);
         this.world = world;
     }

@@ -61,6 +61,13 @@ public class ClientManager implements RegistrationListener, GameModeSelectListen
             return;
         }
         gameWindow.setTitle("Tanks game - %s".formatted(username));
+        SocketGameClient client = new SocketGameClient(gameWindow, username);
+        try {
+            client.start(host);
+        } catch (IOException e) {
+            onError(e.toString());
+            gameWindow.changePanel(new GameModeSelectPanel(this));
+        }
 
     }
 

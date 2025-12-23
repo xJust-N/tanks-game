@@ -6,8 +6,8 @@ import ru.itis.tanks.game.controller.AlternativeTankKeyHandler;
 import ru.itis.tanks.game.controller.TankKeyHandler;
 import ru.itis.tanks.game.model.impl.Texture;
 import ru.itis.tanks.game.model.impl.tank.Tank;
-import ru.itis.tanks.game.model.impl.tank.TankController;
-import ru.itis.tanks.game.model.map.ServerGameWorld;
+import ru.itis.tanks.game.model.impl.tank.ServerTankController;
+import ru.itis.tanks.game.model.map.GameWorld;
 import ru.itis.tanks.game.model.map.GameWorldGenerator;
 import ru.itis.tanks.game.model.map.updates.GameEvent;
 import ru.itis.tanks.game.model.map.updates.GameEventListener;
@@ -22,7 +22,7 @@ public class LocalMultiplayerGame implements GameEventListener {
     private static final int UPDATE_INTERVAL_MS = 16;
 
     @Getter
-    private final ServerGameWorld gameWorld;
+    private final GameWorld gameWorld;
 
     private final GameWindow gameWindow;
 
@@ -32,7 +32,7 @@ public class LocalMultiplayerGame implements GameEventListener {
 
     private boolean isRunning;
 
-    public LocalMultiplayerGame(ServerGameWorld gameWorld, GameWindow window, int updateInterval) {
+    public LocalMultiplayerGame(GameWorld gameWorld, GameWindow window, int updateInterval) {
         this.gameWorld = gameWorld;
         this.gameWindow = window;
         this.updateInterval = updateInterval;
@@ -45,10 +45,11 @@ public class LocalMultiplayerGame implements GameEventListener {
     }
 
     public void startGame() {
-        GameWorldPanel gameRenderer = new GameWorldPanel(gameWorld);
+        GameWorldPanel gameRenderer =
+                new GameWorldPanel(gameWorld.getAllObjects(), gameWorld.getWidth(), gameWorld.getHeight());
         gameWindow.changePanel(gameRenderer);
-        List<TankController> tankControllers = gameWorld.getTanks().values().stream()
-                .map(TankController::new)
+        List<ServerTankController> tankControllers = gameWorld.getTanks().values().stream()
+                .map(ServerTankController::new)
                 .toList();
         gameWindow.addKeyListener(new TankKeyHandler(tankControllers.get(0)));
         gameWindow.addKeyListener(new AlternativeTankKeyHandler(tankControllers.get(1)));
@@ -72,7 +73,7 @@ public class LocalMultiplayerGame implements GameEventListener {
                 update(Math.toIntExact(deltaTime));
                 lastUpdateTime = currentTime;
             }
-            tankControllers.forEach(TankController::processCommands);
+            tankControllers.forEach(ServerTankController::processCommands);
             try {
                 Thread.sleep(updateInterval);
             } catch (InterruptedException e) {
