@@ -55,6 +55,7 @@ public class Tank extends MovingObject implements Destroyable {
         currentPlayerTank = false;
         this.username = "bot";
     }
+
     @Override
     public void takeDamage(int damageValue) {
         int newHp = hp.addAndGet(-damageValue);

@@ -12,16 +12,16 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-public class ClientManager implements RegistrationListener, GameModeSelectListener {
+public class ClientStarter implements RegistrationListener, GameModeSelectListener {
 
     private final GameWindow gameWindow;
 
-    public ClientManager() {
+    public ClientStarter() {
         gameWindow = new GameWindow(new GameModeSelectPanel(this));
     }
 
     public static void main(String[] args) {
-        new ClientManager();
+        new ClientStarter();
     }
 
     @Override

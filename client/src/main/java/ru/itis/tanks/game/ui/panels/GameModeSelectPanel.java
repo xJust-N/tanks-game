@@ -1,6 +1,5 @@
 package ru.itis.tanks.game.ui.panels;
 
-import ru.itis.tanks.game.ClientManager;
 import ru.itis.tanks.game.GameModeSelectListener;
 import ru.itis.tanks.game.ui.model.GameMode;
 

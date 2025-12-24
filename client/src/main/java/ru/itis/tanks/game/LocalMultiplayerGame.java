@@ -100,7 +100,7 @@ public class LocalMultiplayerGame implements GameEventListener {
     }
 
     private void update(int delta) {
-        gameWorld.getUpdatables().forEach(updatable -> {
+        gameWorld.getUpdatables().values().forEach(updatable -> {
             updatable.update(delta);
         });
     }

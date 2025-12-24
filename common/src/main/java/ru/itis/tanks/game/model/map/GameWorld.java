@@ -6,6 +6,9 @@ import ru.itis.tanks.game.model.impl.tank.Tank;
 import ru.itis.tanks.game.model.map.updates.GameEvent;
 import ru.itis.tanks.game.model.map.updates.GameEventDispatcher;
 import ru.itis.tanks.game.model.map.updates.GameEventListener;
+import ru.itis.tanks.network.Position;
+
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,7 +27,7 @@ public class GameWorld implements GameEventDispatcher{
 
     private final List<GameObject> allObjects;
 
-    private final List<Updatable> updatables;
+    private final Map<Integer, Updatable> updatables;
 
     private final Map<Integer, Tank> tanks;
 
@@ -38,14 +41,14 @@ public class GameWorld implements GameEventDispatcher{
         this.height = height;
         listeners = new CopyOnWriteArrayList<>();
         allObjects = new CopyOnWriteArrayList<>();
-        updatables = new CopyOnWriteArrayList<>();
-        tanks = new ConcurrentHashMap<>();
+        updatables = new LinkedHashMap<>();
+        tanks = new LinkedHashMap<>();
         collisionHandler = new CollisionHandler(this);
     }
 
     public void addObject(GameObject object) {
         if (object instanceof Updatable updatable)
-            updatables.add(updatable);
+            updatables.put(updatable.getId(), updatable);
         if(object instanceof Collideable collideable)
             collisionHandler.addToGrid(collideable, object.getX(), object.getY());
         if(object instanceof Tank tank)
@@ -56,7 +59,7 @@ public class GameWorld implements GameEventDispatcher{
 
     public void removeObject(GameObject object) {
         if (object instanceof Updatable updatable)
-            updatables.remove(updatable);
+            updatables.remove(updatable.getId());
         if (object instanceof Collideable)
             collisionHandler.removeFromGrid(object.getX(), object.getY(), (Collideable) object);
         if(object instanceof Tank tank)
@@ -81,4 +84,16 @@ public class GameWorld implements GameEventDispatcher{
         listeners.forEach(l -> l.onGameEvent(update));
     }
 
+    public void removeObject(int id) {
+        removeObject(updatables.get(id));
+    }
+
+    public void updateObject(GameObject obj) {
+        //todo
+    }
+
+    public Position getSpawnPosition() {
+        //todo
+        return new Position(width/2, height/2);
+    }
 }

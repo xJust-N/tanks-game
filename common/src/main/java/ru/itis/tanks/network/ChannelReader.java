@@ -1,68 +1,86 @@
 package ru.itis.tanks.network;
 
-import java.io.ByteArrayInputStream;
+import lombok.RequiredArgsConstructor;
+import ru.itis.tanks.game.model.Direction;
+import ru.itis.tanks.game.model.GameObject;
+import ru.itis.tanks.game.model.impl.tank.Command;
+import ru.itis.tanks.game.model.map.GameWorld;
+import ru.itis.tanks.network.util.GameObjectDeserializer;
+
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.List;
 
+@RequiredArgsConstructor
 public class ChannelReader {
 
     private static final int MAX_MESSAGE_SIZE = 10 * 1024 * 1024;
 
     private static final byte[] START_BYTES = {(byte) 0xA, (byte) 0xB};
 
-    public <T> T readMessage(SocketChannel socketChannel, Class<T> tClass) throws IOException {
-        ByteBuffer headerBuffer = ByteBuffer.allocate(2);
-        while (headerBuffer.hasRemaining()) {
-            int read = socketChannel.read(headerBuffer);
-            if (read == -1) {
-                if (headerBuffer.position() == 0) {
-                    return null;
-                }
-                throw new EOFException("Connection closed while reading header");
+    private final GameObjectDeserializer deserializer;
+
+    public ChannelMessageType readType(SocketChannel channel) throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocate(3);
+        readFully(channel, buffer);
+        readAndCheckStartBytes(buffer);
+        byte messageType = buffer.get();
+        return ChannelMessageType.fromCode(messageType);
+    }
+
+    public Command readCommand(SocketChannel channel) throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocate(1);
+        readFully(channel, buffer);
+        return Command.fromCode(buffer.get());
+    }
+
+    public GameObject readGameObject(SocketChannel channel) throws IOException {
+        return deserializer.deserialize(channel);
+    }
+
+    public int readEntityId(SocketChannel channel) throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocate(4);
+        readFully(channel, buffer);
+        return buffer.getInt();
+    }
+
+    public GameWorld readWorld(SocketChannel channel) throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocate(4 * 2);
+        readFully(channel, buffer);
+        int w = buffer.getInt();
+        int h = buffer.getInt();
+        List<GameObject> objects = deserializer.deserializeAll(channel);
+        GameWorld world = new GameWorld(w, h);
+        objects.forEach(world::addObject);
+        return world;
+    }
+
+    public Position readPosition(SocketChannel channel) throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocate(4 * 5);
+        readFully(channel, buffer);
+        return new Position(
+                buffer.getInt(),
+                buffer.getInt(),
+                buffer.getInt(),
+                Direction.ofValue(buffer.getInt(), buffer.getInt())
+        );
+    }
+
+    private void readFully(SocketChannel channel, ByteBuffer buffer) throws IOException {
+        while (buffer.hasRemaining()) {
+            if (channel.read(buffer) == -1) {
+                throw new EOFException("Connection closed prematurely");
             }
         }
-        headerBuffer.flip();
-        if (headerBuffer.get() != START_BYTES[0] || headerBuffer.get() != START_BYTES[1]) {
-            throw new IOException("Invalid start bytes");
-        }
-        ByteBuffer lengthBuffer = ByteBuffer.allocate(4);
-        while (lengthBuffer.hasRemaining()) {
-            int read = socketChannel.read(lengthBuffer);
-            if (read == -1) {
-                throw new EOFException("Connection closed while reading length");
-            }
-        }
-        lengthBuffer.flip();
-        int length = lengthBuffer.getInt();
+        buffer.flip();
+    }
 
-        if (length < 0 || length > MAX_MESSAGE_SIZE) {
-            throw new IOException("Invalid message length: " + length);
-        }
-
-        ByteBuffer dataBuffer = ByteBuffer.allocate(length);
-        while (dataBuffer.hasRemaining()) {
-            int read = socketChannel.read(dataBuffer);
-            if (read == -1) {
-                throw new EOFException("Connection closed while reading data");
-            }
-        }
-
-        dataBuffer.flip();
-        byte[] bytes = new byte[length];
-        dataBuffer.get(bytes);
-
-        //Todo отказаться от java serialization
-        try (ObjectInputStream objIn = new ObjectInputStream(new ByteArrayInputStream(bytes))) {
-            Object tObj = objIn.readObject();
-            if(tClass.isInstance(tObj))
-                return tClass.cast(tObj);
-            else
-                throw new IOException("Received message is not object of type %s".formatted(tClass.getSimpleName()));
-        } catch (ClassNotFoundException e) {
-            throw new IOException("Class not found during deserialization", e);
-        }
+    private void readAndCheckStartBytes(ByteBuffer buffer) throws IOException {
+        if (buffer.get() != START_BYTES[0])
+            throw new IOException("Invalid channel start");
+        if(buffer.get() != START_BYTES[1])
+            throw new IOException("Invalid channel start");
     }
 }

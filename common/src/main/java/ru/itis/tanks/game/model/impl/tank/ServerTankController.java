@@ -3,6 +3,8 @@ package ru.itis.tanks.game.model.impl.tank;
 import lombok.Getter;
 import ru.itis.tanks.game.model.Direction;
 
+import java.util.ArrayDeque;
+import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -11,12 +13,10 @@ public class ServerTankController implements TankController {
 
     private final Tank tank;
 
-    //чтобы не было состояния гонки с обновлением мира
-    private final BlockingQueue<Command> commandQueue = new LinkedBlockingQueue<>();
+    private final Queue<Command> commandQueue = new ArrayDeque<>();
 
     @Getter
     private Direction direction;
-
 
     public ServerTankController(Tank tank, Direction direction) {
         this.tank = tank;
@@ -40,6 +40,7 @@ public class ServerTankController implements TankController {
         commandQueue.offer(command);
     }
 
+    @Override
     public void processCommands() {
         Command command;
         while ((command = commandQueue.poll()) != null) {

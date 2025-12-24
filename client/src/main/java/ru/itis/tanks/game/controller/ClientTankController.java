@@ -6,10 +6,15 @@ import ru.itis.tanks.game.model.impl.tank.Command;
 import ru.itis.tanks.game.model.impl.tank.TankController;
 import ru.itis.tanks.network.ChannelWriter;
 
+import java.io.IOException;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayDeque;
+import java.util.Queue;
 
 @RequiredArgsConstructor
 public class ClientTankController implements TankController {
+
+    private final Queue<Command> commands = new ArrayDeque<>();
 
     private final SocketChannel channel;
 
@@ -17,11 +22,22 @@ public class ClientTankController implements TankController {
 
     @Override
     public void setDirection(Direction direction) {
-        writer.writePosition();
+        writer.writeDirection(channel, direction);
     }
 
     @Override
     public void enqueueCommand(Command command) {
+            commands.add(command);
+    }
 
+    @Override
+    public void processCommands() {
+        while (!commands.isEmpty()) {
+            try {
+                writer.writeCommands(channel, commands);
+            } catch (IOException e) {
+                //todo
+            }
+        }
     }
 }

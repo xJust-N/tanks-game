@@ -4,10 +4,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.itis.tanks.game.controller.ClientTankController;
 import ru.itis.tanks.game.controller.TankKeyHandler;
-import ru.itis.tanks.game.model.impl.tank.Tank;
+import ru.itis.tanks.game.model.GameObject;
+import ru.itis.tanks.game.model.MovingObject;
+import ru.itis.tanks.game.model.Updatable;
+import ru.itis.tanks.game.model.map.GameWorld;
+import ru.itis.tanks.game.model.map.updates.GameEvent;
+import ru.itis.tanks.game.model.map.updates.GameEventType;
 import ru.itis.tanks.game.ui.GameWindow;
+import ru.itis.tanks.game.ui.panels.GameWorldPanel;
+import ru.itis.tanks.network.ChannelMessageType;
 import ru.itis.tanks.network.ChannelReader;
 import ru.itis.tanks.network.ChannelWriter;
+import ru.itis.tanks.network.Position;
+import ru.itis.tanks.network.util.GameObjectDeserializer;
 import ru.itis.tanks.network.util.GameObjectSerializer;
 
 import java.io.IOException;
@@ -32,12 +41,14 @@ public class SocketGameClient{
 
     private SocketChannel socketChannel;
 
+    private GameWorld world;
+
     private boolean isRunning = false;
 
     public SocketGameClient(GameWindow gameWindow, String username) {
         this.gameWindow = gameWindow;
         this.username = username;
-        this.reader = new ChannelReader();
+        this.reader = new ChannelReader(new GameObjectDeserializer());
         this.writer = new ChannelWriter(new GameObjectSerializer());
     }
 
@@ -53,6 +64,7 @@ public class SocketGameClient{
                         new ClientTankController(
                                 socketChannel, writer)));
         isRunning = true;
+        run();
     }
 
     private void run() throws IOException {
@@ -76,10 +88,52 @@ public class SocketGameClient{
             return;
         }
         if(key.isReadable()) {
-            reader.readMessage(socketChannel)
+            ChannelMessageType type =  reader.readType(socketChannel);
+            switch(type) {
+                case ALL_MAP -> {
+                    world = reader.readWorld(socketChannel);
+                    gameWindow.changePanel(
+                            new GameWorldPanel(
+                                    world.getAllObjects(),
+                                    world.getWidth(),
+                                    world.getWidth()));
+                    logger.info("Successfully read all map");
+                }
+                case MOVING_UPDATE -> {
+                    Position pos = reader.readPosition(socketChannel);
+                    if(pos.getEntityId() == null){
+                        logger.warn("null entity id received, cant update position");
+                        return;
+                    }
+                    Updatable obj = world.getUpdatables().get(pos.getEntityId());
+                    obj.setX(pos.getX());
+                    obj.setY(pos.getY());
+                    if(obj instanceof MovingObject movingObject)
+                        movingObject.setDirection(pos.getDirection());
+                    world.notifyWorldUpdate(
+                            new GameEvent(
+                                    obj,
+                                    GameEventType.MOVED_OBJECT
+                    ));
+                }
+                case ADDED_OBJECT ->{
+                    GameObject obj = reader.readGameObject(socketChannel);
+                    world.addObject(obj);
+                }
+                case REMOVED_OBJECT ->{
+                    int id = reader.readEntityId(socketChannel);
+                    world.removeObject(id);
+                }
+                case ENTITY_UPDATE -> {
+                    GameObject obj = reader.readGameObject(socketChannel);
+                    world.updateObject(obj);
+                }
+                default -> logger.warn("Unsupported type: {}", type);
+            }
         }
     }
 
     private void sendRegistrationMessage() {
+
     }
 }
