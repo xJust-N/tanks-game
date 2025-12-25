@@ -35,19 +35,17 @@ public class ChannelReader {
         return type;
     }
 
-    public Queue<Command> readCommands(SocketChannel channel) throws IOException {
-        logger.debug("Reading commands from channel: {}", channel.getRemoteAddress());
-        ByteBuffer buffer = ByteBuffer.allocate(4);
+    public Command readCommand(SocketChannel channel) throws IOException {
+        logger.debug("Reading command from channel: {}", channel.getRemoteAddress());
+        ByteBuffer buffer = ByteBuffer.allocate(1);
         readFully(channel, buffer);
-        int size = buffer.getInt();
-        logger.debug("Ready to read {} commands from channel: {}", size, channel.getRemoteAddress());
-        ByteBuffer commandBuffer = ByteBuffer.allocate(size);
-        readFully(channel, commandBuffer);
-        Queue<Command> commands = new ArrayDeque<>(size);
-        for (int i = 0; i < size; i++)
-            commands.add(Command.fromCode(commandBuffer.get()));
-        logger.debug("Commands read: {} from channel: {}", commands.size(), channel.getRemoteAddress());
-        return commands;
+        int commandCode = buffer.get();
+        try{
+            return Command.fromCode(commandCode);
+        } catch (IllegalArgumentException e){
+            logger.error("Invalid command code: {}", commandCode);
+            throw new EOFException();
+        }
     }
 
     public GameObject readGameObject(SocketChannel channel) throws IOException {
@@ -77,7 +75,9 @@ public class ChannelReader {
         int count = countBuffer.getInt();
         List<GameObject> objects = new ArrayList<>();
         for (int i = 0; i < count; i++) {
-            objects.add(deserializer.deserialize(channel));
+            GameObject obj = deserializer.deserialize(channel);
+            logger.debug("Object read: {}", obj.toString());
+            objects.add(obj);
         }
         GameWorld world = new GameWorld(w, h);
         objects.forEach(world::addObject);
@@ -117,7 +117,7 @@ public class ChannelReader {
     }
 
     private void readFully(SocketChannel channel, ByteBuffer buffer) throws IOException {
-        logger.trace("Reading fully from channel: {}, buffer size: {}",
+        logger.debug("Reading fully from channel: {}, buffer size: {}",
                 channel.getRemoteAddress(), buffer.capacity());
         int totalRead = 0;
         while (buffer.hasRemaining()) {
@@ -128,15 +128,15 @@ public class ChannelReader {
             totalRead += read;
         }
         buffer.flip();
-        logger.trace("Read fully completed, bytes read: {}", totalRead);
+        logger.debug("Read fully completed, bytes read: {}", totalRead);
     }
 
     private void readAndCheckStartBytes(ByteBuffer buffer) throws IOException {
-        logger.trace("Checking start bytes");
+        logger.debug("Checking start bytes");
         if (buffer.get() != START_BYTES[0])
             throw new IOException("Invalid channel start");
         if(buffer.get() != START_BYTES[1])
             throw new IOException("Invalid channel start");
-        logger.trace("Start bytes checked successfully");
+        logger.debug("Start bytes checked successfully");
     }
 }

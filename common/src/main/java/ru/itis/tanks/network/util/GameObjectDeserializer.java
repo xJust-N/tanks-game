@@ -30,7 +30,12 @@ public class GameObjectDeserializer {
         ByteBuffer buffer = ByteBuffer.allocate(1 + 4 * 5);
         readFully(channel, buffer);
         byte typeCode = buffer.get();
-        GameObjectType type = GameObjectType.fromCode(typeCode);
+        GameObjectType type;
+        try {
+           type = GameObjectType.fromCode(typeCode);
+        } catch (IllegalArgumentException e) {
+            throw new IOException("Unknown gameobject type: " + typeCode);
+        }
         int textureCode = buffer.getInt();
         Texture texture = Texture.fromCode(textureCode);
         int x = buffer.getInt();
@@ -46,11 +51,12 @@ public class GameObjectDeserializer {
                 return new CollideableBlock(x, y, width, height, texture);
             }
             case DESTROYABLE_BLOCK -> {
-                buffer = ByteBuffer.allocate(2 * 4);
+                buffer = ByteBuffer.allocate(4 * 3);
                 readFully(channel, buffer);
+                int id = buffer.getInt();
                 int maxHp = buffer.getInt();
                 int hp = buffer.getInt();
-                 return new DestroyableBlock(world, maxHp, hp, x, y, width, height, texture);
+                 return new DestroyableBlock(world, id, maxHp, hp, x, y, width, height, texture);
             }
             case TANK -> {
                 buffer = ByteBuffer.allocate(6 * 4 + 8 + 1);
@@ -94,13 +100,19 @@ public class GameObjectDeserializer {
             case DEFAULT_GUN, ROCKET_GUN ->
                     throw new IOException("Gun should not be deserialized as standalone GameObject");
             case ROCKET_GUN_POWERUP -> {
-                return new RocketGunPowerup(world, x, y);
+                buffer = ByteBuffer.allocate(4);
+                readFully(channel, buffer);
+                return new RocketGunPowerup(world, buffer.getInt(), x, y);
             }
             case HEALTH_POWERUP -> {
-                return new HealthPowerup(world, x, y);
+                buffer = ByteBuffer.allocate(4);
+                readFully(channel, buffer);
+                return new HealthPowerup(world, buffer.getInt(), x, y);
             }
             case SPEED_POWERUP -> {
-                return new SpeedPowerup(world, x, y);
+                buffer = ByteBuffer.allocate(4);
+                readFully(channel, buffer);
+                return new SpeedPowerup(world, buffer.getInt(), x, y);
             }
             default -> throw new IOException("Unknown GameObject type: " + type);
         }

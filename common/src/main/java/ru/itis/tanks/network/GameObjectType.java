@@ -24,6 +24,8 @@ public enum GameObjectType {
     }
 
     public static GameObjectType fromCode(int i) {
+        if(i < 0 || i >= GameObjectType.values().length)
+            throw new IllegalArgumentException("Invalid GameObjectType: " + i);
         return GameObjectType.values()[i];
     }
 }

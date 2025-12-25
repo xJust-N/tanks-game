@@ -20,6 +20,8 @@ public enum Command {
     }
 
     public static Command fromCode(int code) {
+        if(code < 0 || code >= values().length)
+            throw new IllegalArgumentException("Invalid command code: " + code);
         return Command.values()[code];
     }
 }

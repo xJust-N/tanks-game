@@ -7,4 +7,6 @@ public interface Destroyable extends Removable{
     int getMaxHp();
 
     int getHp();
+
+    boolean isDestroyed();
 }

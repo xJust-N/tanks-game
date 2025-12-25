@@ -11,6 +11,7 @@ import ru.itis.tanks.game.model.map.GameWorld;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
+@Setter
 public class Tank extends MovingObject implements Destroyable {
 
     private static final int DEFAULT_MAX_XP = 100;
@@ -29,13 +30,10 @@ public class Tank extends MovingObject implements Destroyable {
 
     private long lastShootTime;
 
-    @Setter
     private String username;
 
-    @Setter
     private boolean currentPlayerTank;
 
-    @Setter
     private Gun gun;
 
     public Tank(GameWorld world, int id, int maxHp, int velocity, Direction direction,
@@ -83,6 +81,11 @@ public class Tank extends MovingObject implements Destroyable {
         return hp.get();
     }
 
+    @Override
+    public boolean isDestroyed() {
+        return hp.get() <= 0;
+    }
+
     public void incHp(int hp) {
         this.hp.addAndGet(hp);
     }
@@ -106,5 +109,8 @@ public class Tank extends MovingObject implements Destroyable {
         if (time >= gun.getReloadDelay())
             return 0;
         return gun.getReloadDelay() - time;
+    }
+    public void setHp(int hp){
+        this.hp.set(hp);
     }
 }

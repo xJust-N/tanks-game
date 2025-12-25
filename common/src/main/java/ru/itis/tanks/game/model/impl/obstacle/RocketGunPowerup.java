@@ -16,6 +16,10 @@ public class RocketGunPowerup extends AbstractCollectable {
         super(world, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, Texture.ROCKET_GUN_POWERUP);
     }
 
+    public RocketGunPowerup(GameWorld world, int id, int x, int y) {
+        super(world, id, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, Texture.ROCKET_GUN_POWERUP);
+    }
+
     @Override
     public void onTankCollect(Tank tank) {
         tank.setGun(new RocketGun(tank));

@@ -73,12 +73,11 @@ public class ChannelWriter {
                 world.getWidth(), world.getHeight(), objects.size(), channel.getRemoteAddress());
     }
 
-    public void writePosition(SocketChannel channel, Direction dir, int x, int y) throws IOException {
-        logger.debug("Writing position update: ({}, {}), direction: {} to channel: {}",
-                x, y, dir, channel.getRemoteAddress());
+    public void writePosition(SocketChannel channel, int id, Direction dir, int x, int y) throws IOException {
         writeStartBytes(channel);
         writeMessageType(channel, MOVING_UPDATE);
-        ByteBuffer buffer = ByteBuffer.allocate(4 * 4);
+        ByteBuffer buffer = ByteBuffer.allocate(4 * 5);
+        buffer.putInt(id);
         buffer.putInt(x);
         buffer.putInt(y);
         buffer.putInt(dir.getX());
@@ -87,18 +86,15 @@ public class ChannelWriter {
         while(buffer.hasRemaining()) {
             channel.write(buffer);
         }
-        logger.debug("Position update written: ({}, {})", x, y);
     }
 
     private void writeStartBytes(SocketChannel channel) throws IOException {
-        logger.trace("Writing start bytes to channel: {}", channel.getRemoteAddress());
         ByteBuffer buffer = ByteBuffer.wrap(START_BYTES);
         while(buffer.hasRemaining())
             channel.write(buffer);
     }
 
     private void writeMessageType(SocketChannel channel, ChannelMessageType type) throws IOException {
-        logger.trace("Writing message type: {} to channel: {}", type, channel.getRemoteAddress());
         ByteBuffer buffer = ByteBuffer.wrap(new byte[]{(byte) type.getCode()});
         while(buffer.hasRemaining())
             channel.write(buffer);
@@ -124,23 +120,10 @@ public class ChannelWriter {
         logger.info("Game over message written to channel: {}", channel.getRemoteAddress());
     }
 
-    public void writeCommands(SocketChannel channel, Queue<Command> commands) throws IOException {
-        logger.debug("Writing commands: {} to channel: {}", commands.size(), channel.getRemoteAddress());
-        writeStartBytes(channel);
-        writeMessageType(channel, COMMAND);
-        int size = commands.size();
-        ByteBuffer buffer = ByteBuffer.allocate(4);
-        buffer.putInt(size);
+    public void writeCommand(SocketChannel channel, Command cmd) throws IOException {
+        ByteBuffer buffer = ByteBuffer.wrap(new byte[]{(byte) cmd.getCode()});
         while (buffer.hasRemaining())
             channel.write(buffer);
-        buffer = ByteBuffer.allocate(size);
-        for(int i = 0; i < size; i++)
-            buffer.put((byte) Objects.requireNonNull(commands.poll()).getCode());
-        buffer.flip();
-        while(buffer.hasRemaining()) {
-            channel.write(buffer);
-        }
-        logger.debug("Commands written: {} to channel: {}", size, channel.getRemoteAddress());
     }
 
     public void write(SocketChannel socketChannel, ChannelMessageType channelMessageType, String str) throws IOException {

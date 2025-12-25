@@ -30,7 +30,7 @@ import static ru.itis.tanks.network.GameObjectType.*;
 public class GameObjectSerializer {
 
     public ByteBuffer serialize(GameObject object) throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate(1024 * 4);
+        ByteBuffer buffer = ByteBuffer.allocate(4 * 20);
         buffer.put((byte) -1);//Тут будет тип объекта
         buffer.putInt(object.getTexture().getCode());
         buffer.putInt(object.getX());
@@ -75,6 +75,7 @@ public class GameObjectSerializer {
         switch (block) {
             case DestroyableBlock obj -> {
                 buffer.put(0, (byte) DESTROYABLE_BLOCK.getCode());
+                buffer.putInt(obj.getId());
                 buffer.putInt(obj.getMaxHp());
                 buffer.putInt(obj.getHp());
             }
@@ -91,11 +92,15 @@ public class GameObjectSerializer {
             case RocketGun _ ->{
                 buffer.put((byte) ROCKET_GUN.getCode());
             }
+            case null -> {
+                buffer.put((byte) -1);
+            }
             default -> throw new IOException("Unexpected value: " + gun);
         }
     }
 
     private void serializeCollectable(Collectable col, ByteBuffer buffer) throws IOException {
+        buffer.putInt(col.getId());
         switch (col){
             case RocketGunPowerup _ -> buffer.put(0, (byte) ROCKET_GUN_POWERUP.getCode());
             case HealthPowerup _ -> buffer.put(0, (byte) HEALTH_POWERUP.getCode());

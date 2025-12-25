@@ -68,7 +68,7 @@ public class SelectorSocketServer implements GameEventListener {
     }
 
     private void startBotTanksThreads() {
-       // controllers.forEach(controller -> new AITank(controller).start());
+       //controllers.forEach(controller -> new AITank(controller).start());
     }
 
     private void run() {
@@ -146,11 +146,9 @@ public class SelectorSocketServer implements GameEventListener {
             throw new EOFException("Client not found");
         }
         SocketChannel channel = client.getChannel();
-        Queue<Command> cmds = reader.readCommands(channel);
-        logger.debug("Received {} commands from client {}", cmds.size(), id);
-        for(Command command : cmds) {
-            client.getController().enqueueCommand(command);
-        }
+        Command cmd = reader.readCommand(channel);
+        logger.debug("Received {} command from client {}", cmd, id);
+        client.getController().enqueueCommand(cmd);
         logger.info("Successfully handled client {} command", id);
     }
 
@@ -232,11 +230,10 @@ public class SelectorSocketServer implements GameEventListener {
     }
 
     private void sendMoveToClients(MovingObject obj) {
-        logger.debug("Sending move to client");
         for (ClientManager c : clients.values()) {
             try {
                 writer.writePosition(
-                        c.getChannel(), obj.getDirection(), obj.getX(), obj.getY());
+                        c.getChannel(), obj.getId(), obj.getDirection(), obj.getX(), obj.getY());
             } catch (IOException e) {
                 logger.error("Cannot send move update to {}", c.getId(), e);
             }

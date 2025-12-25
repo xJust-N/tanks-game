@@ -104,14 +104,15 @@ public class CollisionHandler {
         }
         else if (otherObj instanceof Destroyable destroyable) {
             destroyable.takeDamage(projectile.getDamage());
+            if(destroyable.isDestroyed())
+                return;
             dispatcher.notifyWorldUpdate(new GameEvent(destroyable, MODIFIED_OBJECT));
         }
         projectile.remove();
     }
 
     private void handleTankCollision(Tank tank, GameObject secondObj) {
-        if (secondObj instanceof Projectile projectile) {
-            //handleProjectileCollision(projectile, tank);
+        if (secondObj instanceof Projectile) {
             return;
         } else if (secondObj instanceof Collectable collectable) {
             collectable.onTankCollect(tank);

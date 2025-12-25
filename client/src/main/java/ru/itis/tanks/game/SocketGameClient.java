@@ -88,7 +88,6 @@ public class SocketGameClient {
     }
 
     private void handleSelection(SelectionKey key) throws IOException {
-        logger.debug("Handling selection key");
         if (key.isConnectable()) {
             logger.debug("Connectable");
             if (socketChannel.finishConnect()) {
@@ -108,6 +107,7 @@ public class SocketGameClient {
                     logger.info("Successfully read all map with size {}, width: {}, height: {}",
                             world.getAllObjects().size(), world.getWidth(), world.getHeight());
                     GameWorldRenderer renderer = new GameWorldRenderer(world);
+                    world.addWorldUpdateListener(renderer);
                     gameWindow.changePanel(renderer);
                     updateThread.start();
                     logger.debug("Renderer created and panel changed");
@@ -115,12 +115,16 @@ public class SocketGameClient {
                 }
                 case MOVING_UPDATE -> {
                     Position pos = reader.readPosition(socketChannel);
-                    logger.debug("Received position: {}, {}", pos.getX(), pos.getY());
+                    logger.debug("Received position: for entity {}, x {}, y {}", pos.getEntityId(), pos.getX(), pos.getY());
                     if (pos.getEntityId() == null) {
                         logger.warn("null entity id received, cant update position");
                         return;
                     }
                     Updatable obj = world.getUpdatables().get(pos.getEntityId());
+                    if(obj == null){
+                        logger.warn("Object doesn't exist, cannot update position");
+                        return;
+                    }
                     obj.setX(pos.getX());
                     obj.setY(pos.getY());
                     if (obj instanceof MovingObject movingObject)
@@ -139,27 +143,18 @@ public class SocketGameClient {
                 case REMOVED_ENTITY -> {
                     int id = reader.readEntityId(socketChannel);
                     world.removeObject(id);
-                    logger.debug("Successfully removed entity");
+                    logger.debug("Successfully removed entity {}", id);
                 }
                 case ENTITY_UPDATE -> {
                     GameObject obj = reader.readGameObject(socketChannel);
                     world.updateObject(obj);
                     logger.debug("Successfully updated entity");
                 }
+                case GAME_OVER -> {
+                    //todo
+                    }
                 default -> logger.warn("Unsupported type: {}", type);
             }
-        }
-        if(key.isWritable()){
-            if (tankController.hasCommands()) {
-                logger.debug("Writing commands");
-                tankController.processCommands();
-                logger.debug("Sent commands");
-            }
-        }
-        try {
-            Thread.sleep(UPDATE_INTERVAL_MS);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -181,13 +176,12 @@ public class SocketGameClient {
     private void updateLoop() {
         logger.debug("Started update thread");
         while (isRunning) {
-            gameWindow.update();
-            try {
-                Thread.sleep(UPDATE_INTERVAL_MS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
+            if (tankController.hasCommands()) {
+                logger.debug("Writing commands");
+                tankController.processCommands();
+                logger.debug("Sent commands");
             }
+            gameWindow.update();
         }
     }
 }

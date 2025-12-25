@@ -22,7 +22,12 @@ public class ClientTankController implements TankController {
 
     @Override
     public void setDirection(Direction direction) {
-
+        switch (direction) {
+            case UP -> enqueueCommand(Command.UP);
+            case DOWN -> enqueueCommand(Command.DOWN);
+            case LEFT -> enqueueCommand(Command.LEFT);
+            case RIGHT -> enqueueCommand(Command.RIGHT);
+        }
     }
 
     @Override
@@ -32,8 +37,10 @@ public class ClientTankController implements TankController {
 
     @Override
     public void processCommands() {
+        if(commands.isEmpty())
+            return;
         try {
-            writer.writeCommands(channel, commands);
+            writer.writeCommand(channel, commands.poll());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

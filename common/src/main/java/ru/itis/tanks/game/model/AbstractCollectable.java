@@ -13,9 +13,13 @@ public abstract class AbstractCollectable extends AbstractGameObject implements 
     protected final GameWorld world;
 
     public AbstractCollectable(GameWorld world, int x, int y, int width, int height, Texture texture) {
+        this(world, IdManager.getNextId(), x, y, width, height, texture);
+    }
+
+    public AbstractCollectable(GameWorld world, int id, int x, int y, int width, int height, Texture texture) {
         super(x, y, width, height, texture);
         this.world = world;
-        id = IdManager.getNextId();
+        this.id = id;
     }
 
     @Override

@@ -83,14 +83,14 @@ public class GameWorldRenderer extends JPanel implements GameEventListener {
     }
 
     public void refresh(){
-        updateGraphicalComponents();
         repaint();
     }
 
     @Override
     public void onGameEvent(GameEvent event) {
         if (event.getType() == GameEventType.REMOVED_OBJECT
-                || event.getType() == GameEventType.ADDED_OBJECT)
+                || event.getType() == GameEventType.ADDED_OBJECT
+                || event.getType() == GameEventType.MODIFIED_OBJECT)
             updateGraphicalComponents();
     }
 }

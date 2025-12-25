@@ -2,22 +2,19 @@ package ru.itis.tanks.game.model.map;
 
 import lombok.Getter;
 import ru.itis.tanks.game.model.*;
+import ru.itis.tanks.game.model.impl.obstacle.DestroyableBlock;
 import ru.itis.tanks.game.model.impl.tank.Tank;
+import ru.itis.tanks.game.model.impl.weapon.Projectile;
 import ru.itis.tanks.game.model.map.updates.GameEvent;
 import ru.itis.tanks.game.model.map.updates.GameEventDispatcher;
 import ru.itis.tanks.game.model.map.updates.GameEventListener;
 import ru.itis.tanks.network.Position;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import static ru.itis.tanks.game.model.map.updates.GameEventType.*;
 
-//Todo: сериализация и десериализация
 //Todo game over update(один побеждает, другой проигрывает)
 @Getter
 public class GameWorld implements GameEventDispatcher{
@@ -42,8 +39,8 @@ public class GameWorld implements GameEventDispatcher{
     public GameWorld(int width, int height) {
         this.width = width;
         this.height = height;
-        listeners = new CopyOnWriteArrayList<>();
-        allObjects = new CopyOnWriteArrayList<>();
+        listeners = new ArrayList<>();
+        allObjects = new ArrayList<>();
         updatables = new ConcurrentHashMap<>();
         tanks = new LinkedHashMap<>();
         identifiables = new HashMap<>();
@@ -93,12 +90,58 @@ public class GameWorld implements GameEventDispatcher{
     }
 
     public void removeObject(int id) {
-        removeObject(identifiables.get(id));
+       removeObject(identifiables.get(id));
     }
 
     public void updateObject(GameObject obj) {
-        removeObject(obj);
-        addObject(obj);
+        if (!(obj instanceof Identifiable identifiable)) {
+            addObject(obj);
+            return;
+        }
+        int id = identifiable.getId();
+        GameObject existingObject = identifiables.get(id);
+        if (existingObject == null) {
+            addObject(obj);
+            return;
+        }
+        updateExistingObject(existingObject, obj);
+        notifyWorldUpdate(new GameEvent(existingObject, MODIFIED_OBJECT));
+    }
+
+    private void updateExistingObject(GameObject existing, GameObject newData) {
+        existing.setX(newData.getX());
+        existing.setY(newData.getY());
+        switch (existing) {
+            case Tank existingTank when newData instanceof Tank newTank -> updateTank(existingTank, newTank);
+            case DestroyableBlock existingBlock when newData instanceof DestroyableBlock newBlock ->
+                    updateDestroyableBlock(existingBlock, newBlock);
+            case Projectile existingProjectile when newData instanceof Projectile newProjectile ->
+                    updateProjectile(existingProjectile, newProjectile);
+            default -> {
+            }
+        }
+    }
+
+    private void updateTank(Tank existing, Tank newData) {
+        existing.setHp(newData.getHp());
+        existing.setMaxHp(newData.getMaxHp());
+        existing.setVelocity(newData.getVelocity());
+        existing.setDirection(newData.getDirection());
+        existing.setLastShootTime(newData.getLastShootTime());
+        if (newData.getGun() != null) {
+            existing.setGun(newData.getGun());
+        }
+    }
+
+    private void updateDestroyableBlock(DestroyableBlock existing, DestroyableBlock newData) {
+        existing.setHp(newData.getHp());
+        existing.setMaxHp(newData.getMaxHp());
+    }
+
+    private void updateProjectile(Projectile existing, Projectile newData) {
+        existing.setDamage(newData.getDamage());
+        existing.setVelocity(newData.getVelocity());
+        existing.setDirection(newData.getDirection());
     }
 
     public Position getSpawnPosition() {
