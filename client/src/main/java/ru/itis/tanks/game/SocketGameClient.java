@@ -11,7 +11,7 @@ import ru.itis.tanks.game.model.map.GameWorld;
 import ru.itis.tanks.game.model.map.updates.GameEvent;
 import ru.itis.tanks.game.model.map.updates.GameEventType;
 import ru.itis.tanks.game.ui.GameWindow;
-import ru.itis.tanks.game.ui.panels.GameWorldPanel;
+import ru.itis.tanks.game.ui.panels.GameWorldRenderer;
 import ru.itis.tanks.network.ChannelMessageType;
 import ru.itis.tanks.network.ChannelReader;
 import ru.itis.tanks.network.ChannelWriter;
@@ -24,8 +24,15 @@ import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.Iterator;
 
-public class SocketGameClient{
+public class SocketGameClient {
+
+    private static final int UPDATE_INTERVAL_MS = 16;
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    private final Thread updateThread;
 
     private final GameWindow gameWindow;
 
@@ -35,21 +42,22 @@ public class SocketGameClient{
 
     private final String username;
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private GameWorld world;
+
+    private ClientTankController tankController;
 
     private Selector selector;
 
     private SocketChannel socketChannel;
 
-    private GameWorld world;
-
-    private boolean isRunning = false;
+    private volatile boolean isRunning = false;
 
     public SocketGameClient(GameWindow gameWindow, String username) {
         this.gameWindow = gameWindow;
         this.username = username;
         this.reader = new ChannelReader(new GameObjectDeserializer());
         this.writer = new ChannelWriter(new GameObjectSerializer());
+        this.updateThread = new Thread(this::updateLoop);
     }
 
     public void start(InetSocketAddress socketAddress) throws IOException {
@@ -59,19 +67,21 @@ public class SocketGameClient{
         socketChannel.configureBlocking(false);
         socketChannel.connect(socketAddress);
         socketChannel.register(selector, SelectionKey.OP_CONNECT);
+        tankController = new ClientTankController(socketChannel, writer);
         gameWindow.addKeyListener(
-                new TankKeyHandler(
-                        new ClientTankController(
-                                socketChannel, writer)));
+                new TankKeyHandler(tankController));
         isRunning = true;
         run();
     }
 
     private void run() throws IOException {
         logger.info("Running SocketGameClient");
-        while (isRunning){
+        while (isRunning) {
             selector.select();
-            for(SelectionKey key : selector.selectedKeys()) {
+            Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
+            while (iterator.hasNext()) {
+                SelectionKey key = iterator.next();
+                iterator.remove();
                 handleSelection(key);
             }
         }
@@ -79,61 +89,105 @@ public class SocketGameClient{
 
     private void handleSelection(SelectionKey key) throws IOException {
         logger.debug("Handling selection key");
-        if(key.isConnectable()) {
+        if (key.isConnectable()) {
             logger.debug("Connectable");
-            socketChannel.finishConnect();
-            sendRegistrationMessage();
-            key.interestOps(SelectionKey.OP_READ);
-            logger.info("Successfully connected to {}", socketChannel.getRemoteAddress());
+            if (socketChannel.finishConnect()) {
+                sendRegistrationMessage();
+                key.interestOps(SelectionKey.OP_READ);
+                key.interestOpsOr(SelectionKey.OP_WRITE);
+                logger.info("Successfully connected to {}", socketChannel.getRemoteAddress());
+            }
             return;
         }
-        if(key.isReadable()) {
-            ChannelMessageType type =  reader.readType(socketChannel);
-            switch(type) {
+        if (key.isReadable()) {
+            ChannelMessageType type = reader.readType(socketChannel);
+            logger.debug("Received message type: {}", type);
+            switch (type) {
                 case ALL_MAP -> {
                     world = reader.readWorld(socketChannel);
-                    gameWindow.changePanel(
-                            new GameWorldPanel(
-                                    world.getAllObjects(),
-                                    world.getWidth(),
-                                    world.getWidth()));
-                    logger.info("Successfully read all map");
+                    logger.info("Successfully read all map with size {}, width: {}, height: {}",
+                            world.getAllObjects().size(), world.getWidth(), world.getHeight());
+                    GameWorldRenderer renderer = new GameWorldRenderer(world);
+                    gameWindow.changePanel(renderer);
+                    updateThread.start();
+                    logger.debug("Renderer created and panel changed");
+
                 }
                 case MOVING_UPDATE -> {
                     Position pos = reader.readPosition(socketChannel);
-                    if(pos.getEntityId() == null){
+                    logger.debug("Received position: {}, {}", pos.getX(), pos.getY());
+                    if (pos.getEntityId() == null) {
                         logger.warn("null entity id received, cant update position");
                         return;
                     }
                     Updatable obj = world.getUpdatables().get(pos.getEntityId());
                     obj.setX(pos.getX());
                     obj.setY(pos.getY());
-                    if(obj instanceof MovingObject movingObject)
+                    if (obj instanceof MovingObject movingObject)
                         movingObject.setDirection(pos.getDirection());
                     world.notifyWorldUpdate(
                             new GameEvent(
                                     obj,
                                     GameEventType.MOVED_OBJECT
-                    ));
+                            ));
                 }
-                case ADDED_OBJECT ->{
+                case ADDED_ENTITY -> {
                     GameObject obj = reader.readGameObject(socketChannel);
                     world.addObject(obj);
+                    logger.debug("Successfully added entity");
                 }
-                case REMOVED_OBJECT ->{
+                case REMOVED_ENTITY -> {
                     int id = reader.readEntityId(socketChannel);
                     world.removeObject(id);
+                    logger.debug("Successfully removed entity");
                 }
                 case ENTITY_UPDATE -> {
                     GameObject obj = reader.readGameObject(socketChannel);
                     world.updateObject(obj);
+                    logger.debug("Successfully updated entity");
                 }
                 default -> logger.warn("Unsupported type: {}", type);
             }
         }
+        if(key.isWritable()){
+            if (tankController.hasCommands()) {
+                logger.debug("Writing commands");
+                tankController.processCommands();
+                logger.debug("Sent commands");
+            }
+        }
+        try {
+            Thread.sleep(UPDATE_INTERVAL_MS);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void sendRegistrationMessage() {
+        try {
+            logger.debug("Sending registration message for user: {}", username);
+            writer.write(socketChannel, ChannelMessageType.REGISTER, username);
+            logger.debug("Registration message sent successfully");
+        } catch (IOException e) {
+            logger.error("Failed to send registration message", e);
+            try {
+                socketChannel.close();
+            } catch (IOException ex) {
+                logger.error("Failed to close channel", ex);
+            }
+        }
+    }
 
+    private void updateLoop() {
+        logger.debug("Started update thread");
+        while (isRunning) {
+            gameWindow.update();
+            try {
+                Thread.sleep(UPDATE_INTERVAL_MS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
     }
 }

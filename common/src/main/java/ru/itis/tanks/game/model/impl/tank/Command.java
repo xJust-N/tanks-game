@@ -8,7 +8,10 @@ public enum Command {
     START_MOVING(0),
     STOP_MOVING(1),
     SHOOT(2),
-    DIRECTION_CHANGE(3);
+    UP(3),
+    DOWN(4),
+    LEFT(5),
+    RIGHT(6);
 
     private final int code;
 

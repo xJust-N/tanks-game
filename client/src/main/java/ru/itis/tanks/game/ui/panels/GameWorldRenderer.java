@@ -1,5 +1,6 @@
 package ru.itis.tanks.game.ui.panels;
 
+import lombok.Getter;
 import ru.itis.tanks.game.model.GameObject;
 import ru.itis.tanks.game.model.map.GameWorld;
 import ru.itis.tanks.game.model.map.updates.GameEvent;
@@ -14,29 +15,23 @@ import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GameWorldPanel extends JPanel implements GameEventListener {
+public class GameWorldRenderer extends JPanel implements GameEventListener {
 
-    private final List<GameObject> allGameObjects;
+    private final GameWorld world;
 
     private List<GraphicalComponent> graphicalComponents;
 
-    private final int width;
-
-    private final int height;
-
-    public GameWorldPanel(List<GameObject> gameObjects, int w, int h) {
-        this.allGameObjects = gameObjects;
-        this.width = w;
-        this.height = h;
+    public GameWorldRenderer(GameWorld world) {
+        this.world = world;
+        graphicalComponents = new ArrayList<>();
+        init();
     }
-
     private void init() {
         setPreferredSize(
-                new Dimension(width, height)
+                new Dimension(world.getWidth(), world.getHeight())
         );
         setVisible(true);
         setBackground(Color.GRAY);
-        updateGraphicalComponents();
     }
 
     //Использование графикс согласно требованиям
@@ -79,15 +74,17 @@ public class GameWorldPanel extends JPanel implements GameEventListener {
         return Math.toIntExact(x);
     }
 
-    public void render() {
-        repaint();
-    }
 
     public void updateGraphicalComponents() {
-        graphicalComponents = allGameObjects
+        graphicalComponents = world.getAllObjects()
                 .stream()
                 .map(GraphicalComponentFactory::createComponent)
                 .toList();
+    }
+
+    public void refresh(){
+        updateGraphicalComponents();
+        repaint();
     }
 
     @Override

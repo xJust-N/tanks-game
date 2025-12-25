@@ -1,5 +1,7 @@
 package ru.itis.tanks.game.ui;
 
+import ru.itis.tanks.game.ui.panels.GameWorldRenderer;
+
 import javax.swing.*;
 import java.awt.HeadlessException;
 
@@ -25,14 +27,15 @@ public class GameWindow extends JFrame {
     }
 
     public void update() {
-        if (currentPanel != null) {
-            currentPanel.repaint();
-        }
+        currentPanel.repaint();
+        if(currentPanel instanceof GameWorldRenderer renderer)
+            renderer.refresh();
     }
 
     public void changePanel(JPanel panel) {
         currentPanel = panel;
         setContentPane(currentPanel);
+        setPreferredSize(panel.getPreferredSize());
         revalidate();
         repaint();
         pack();

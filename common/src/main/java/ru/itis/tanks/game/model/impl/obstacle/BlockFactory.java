@@ -1,5 +1,6 @@
 package ru.itis.tanks.game.model.impl.obstacle;
 
+import ru.itis.tanks.game.model.GameObject;
 import ru.itis.tanks.game.model.impl.Texture;
 import ru.itis.tanks.game.model.map.GameWorld;
 
@@ -16,9 +17,9 @@ public class BlockFactory {
 
     private static final double WOOD_MATERIAL_CHANCE = 0.4;
 
-    private static final int WOOD_BLOCK_MAX_HP = 50;
+    private static final int BLOCK_MIN_HP = 50;
 
-    private static final int BRICK_BLOCK_MAX_HP = 250;
+    private static final int BLOCK_MAX_HP = 250;
 
     private static final Random RAND = new Random();
 
@@ -39,17 +40,12 @@ public class BlockFactory {
     }
 
     public static DestroyableBlock createDestroyableBlock(GameWorld world, int x, int y) {
-        double chance = RAND.nextDouble();
-        DestroyableBlock block;
-        if(chance <= WOOD_MATERIAL_CHANCE){
-            block = new DestroyableBlock(world, WOOD_BLOCK_MAX_HP, x, y);
-            block.setTexture(WOOD);
-        }
-        else{
-            block = new DestroyableBlock(world, BRICK_BLOCK_MAX_HP, x, y);
-            block.setTexture(BRICK);
-        }
-        return block;
+        return createDestroyableBlock(
+                world,
+                BLOCK_MIN_HP + RAND.nextInt(BLOCK_MAX_HP - BLOCK_MIN_HP),
+                x,
+                y
+        );
     }
 
     public static Block createNonCollideableBlock(int x, int y) {
@@ -74,5 +70,19 @@ public class BlockFactory {
 
     private static Texture getRandomTexture(List<Texture> textures) {
         return textures.get(RAND.nextInt(textures.size()));
+    }
+
+    public static DestroyableBlock createDestroyableBlock(GameWorld world, int maxHp, int x, int y) {
+        double chance = RAND.nextDouble();
+        DestroyableBlock block;
+        if(chance <= WOOD_MATERIAL_CHANCE){
+            block = new DestroyableBlock(world, maxHp, x, y);
+            block.setTexture(WOOD);
+        }
+        else{
+            block = new DestroyableBlock(world, maxHp, x, y);
+            block.setTexture(BRICK);
+        }
+        return block;
     }
 }

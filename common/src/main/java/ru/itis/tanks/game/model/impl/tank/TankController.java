@@ -9,4 +9,6 @@ public interface TankController {
     void enqueueCommand(Command command);
 
     void processCommands();
+
+    boolean hasCommands();
 }

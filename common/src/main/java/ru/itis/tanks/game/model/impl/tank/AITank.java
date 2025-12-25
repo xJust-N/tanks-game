@@ -1,9 +1,6 @@
-package ru.itis.tanks.game.controller;
+package ru.itis.tanks.game.model.impl.tank;
 
 import lombok.SneakyThrows;
-import ru.itis.tanks.game.model.Direction;
-import ru.itis.tanks.game.model.impl.tank.Command;
-import ru.itis.tanks.game.model.impl.tank.ServerTankController;
 
 import java.util.Random;
 
@@ -15,11 +12,11 @@ public class AITank implements Runnable {
 
     private final Random rand = new Random();
 
-    private final ServerTankController controller;
+    private final TankController controller;
 
     private Thread aiThread;
 
-    public AITank(ServerTankController controller) {
+    public AITank(TankController controller) {
         this.controller = controller;
     }
 
@@ -43,10 +40,6 @@ public class AITank implements Runnable {
         while (!Thread.currentThread().isInterrupted() && Thread.currentThread().isAlive()) {
             Command command = getRandomCommand();
             controller.enqueueCommand(getRandomCommand());
-            if(command == Command.DIRECTION_CHANGE){
-                controller.setDirection(getRandomDirection());
-                continue;
-            }
             Thread.sleep(getRandomSleepTime());
             if(command == Command.START_MOVING) {
                 controller.enqueueCommand(Command.STOP_MOVING);
@@ -61,8 +54,5 @@ public class AITank implements Runnable {
     private int getRandomSleepTime(){
         return ACTION_MIN_DELAY +
                 rand.nextInt(ACTION_MAX_DELAY - ACTION_MIN_DELAY);
-    }
-    private Direction getRandomDirection(){
-        return Direction.values()[rand.nextInt(Direction.values().length)];
     }
 }

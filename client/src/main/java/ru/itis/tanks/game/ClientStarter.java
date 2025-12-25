@@ -40,7 +40,7 @@ public class ClientStarter implements RegistrationListener, GameModeSelectListen
         String username = reg.getUsername();
         String hostStr = reg.getHost();
         int port;
-        try{
+        try {
             port = parsePort(reg.getPort());
         } catch (IllegalArgumentException e) {
             onError(e.getMessage());
@@ -56,43 +56,33 @@ public class ClientStarter implements RegistrationListener, GameModeSelectListen
             onError("Unknown host, try again");
             return;
         }
-        if(!isAvailableServer(host)){
-            onError("Server does not exists or unavailable");
-            return;
-        }
         gameWindow.setTitle("Tanks game - %s".formatted(username));
         SocketGameClient client = new SocketGameClient(gameWindow, username);
-        try {
-            client.start(host);
-        } catch (IOException e) {
-            onError(e.toString());
-            gameWindow.changePanel(new GameModeSelectPanel(this));
-        }
-
+        new Thread(() -> {
+            try {
+                client.start(host);
+            } catch (IOException e) {
+                onError(e.toString());
+                gameWindow.changePanel(new GameModeSelectPanel(this));
+                Thread.currentThread().interrupt();
+            }
+        }).start();
     }
 
     private void onError(String er) {
         gameWindow.showError(er);
     }
-    
-    private int parsePort(String portStr) throws IllegalArgumentException{
+
+    private int parsePort(String portStr) throws IllegalArgumentException {
         int port;
-        try{
+        try {
             port = Integer.parseInt(portStr);
-        } catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Port is incorrect");
         }
-        if(port < 0 || port > 65535)
+        if (port < 0 || port > 65535)
             throw new IllegalArgumentException("Port must be between 0 and 65535");
         return port;
     }
-    
-    private boolean isAvailableServer(InetSocketAddress address) {
-        try (Socket socket = new Socket()) {
-            socket.connect(address, 3000);
-            return true;
-        } catch (IOException e) {
-            return false;
-        }
-    }
+
 }

@@ -22,22 +22,25 @@ public class ClientTankController implements TankController {
 
     @Override
     public void setDirection(Direction direction) {
-        writer.writeDirection(channel, direction);
+
     }
 
     @Override
     public void enqueueCommand(Command command) {
-            commands.add(command);
+        commands.add(command);
     }
 
     @Override
     public void processCommands() {
-        while (!commands.isEmpty()) {
-            try {
-                writer.writeCommands(channel, commands);
-            } catch (IOException e) {
-                //todo
-            }
+        try {
+            writer.writeCommands(channel, commands);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public boolean hasCommands() {
+        return !commands.isEmpty();
     }
 }

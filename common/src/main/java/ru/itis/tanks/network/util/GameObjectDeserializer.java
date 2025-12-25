@@ -1,23 +1,117 @@
 package ru.itis.tanks.network.util;
 
-import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import ru.itis.tanks.game.model.Direction;
 import ru.itis.tanks.game.model.GameObject;
+import ru.itis.tanks.game.model.Gun;
+import ru.itis.tanks.game.model.impl.Texture;
+import ru.itis.tanks.game.model.impl.obstacle.*;
+import ru.itis.tanks.game.model.impl.tank.Tank;
+import ru.itis.tanks.game.model.impl.weapon.DefaultGun;
+import ru.itis.tanks.game.model.impl.weapon.Projectile;
+import ru.itis.tanks.game.model.impl.weapon.RocketGun;
 import ru.itis.tanks.game.model.map.GameWorld;
+import ru.itis.tanks.network.GameObjectType;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.List;
 
+import static ru.itis.tanks.network.GameObjectType.*;
+
+@Setter
 @NoArgsConstructor
 public class GameObjectDeserializer {
 
     private GameWorld world;
 
-    public GameObject deserialize(SocketChannel bytes) {
-        return null;
+    public GameObject deserialize(SocketChannel channel) throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocate(1 + 4 * 5);
+        readFully(channel, buffer);
+        byte typeCode = buffer.get();
+        GameObjectType type = GameObjectType.fromCode(typeCode);
+        int textureCode = buffer.getInt();
+        Texture texture = Texture.fromCode(textureCode);
+        int x = buffer.getInt();
+        int y = buffer.getInt();
+        int width = buffer.getInt();
+        int height = buffer.getInt();
+
+        switch (type) {
+            case BLOCK -> {
+                return new Block(x, y, width, height, texture);
+            }
+            case COLLIDEABLE_BLOCK -> {
+                return new CollideableBlock(x, y, width, height, texture);
+            }
+            case DESTROYABLE_BLOCK -> {
+                buffer = ByteBuffer.allocate(2 * 4);
+                readFully(channel, buffer);
+                int maxHp = buffer.getInt();
+                int hp = buffer.getInt();
+                 return new DestroyableBlock(world, maxHp, hp, x, y, width, height, texture);
+            }
+            case TANK -> {
+                buffer = ByteBuffer.allocate(6 * 4 + 8 + 1);
+                readFully(channel, buffer);
+                int id = buffer.getInt();
+                int velocity = buffer.getInt();
+                int dirX = buffer.getInt();
+                int dirY = buffer.getInt();
+                Direction direction = Direction.ofValue(dirX, dirY);
+                int maxHp = buffer.getInt();
+                int hp = buffer.getInt();
+                long lastShootTime = buffer.getLong();
+                byte gunCode = buffer.get();
+                 Tank t = new Tank(world, id, maxHp, hp,
+                         lastShootTime, null, velocity, direction, texture, x, y, width, height);
+                if (gunCode == DEFAULT_GUN.getCode()) {
+                    t.setGun(new DefaultGun(t));
+                } else if (gunCode == ROCKET_GUN.getCode()) {
+                    t.setGun(new RocketGun(t));
+                }
+                return t;
+            }
+            case PROJECTILE -> {
+                buffer = ByteBuffer.allocate(6 * 4);
+                readFully(channel, buffer);
+                int id = buffer.getInt();
+                int velocity = buffer.getInt();
+                int dirX = buffer.getInt();
+                int dirY = buffer.getInt();
+                Direction direction = Direction.ofValue(dirX, dirY);
+                int tankId = buffer.getInt();
+                int damage = buffer.getInt();
+                Tank tank = world.getTanks().get(tankId);
+                if (tank == null) {
+                    throw new IOException("Tank not found for id: " + tankId);
+                }
+                 Projectile p = new Projectile(id, tank, velocity, damage, texture, x, y, width, height);
+                p.setDirection(direction);
+                return p;
+            }
+            case DEFAULT_GUN, ROCKET_GUN ->
+                    throw new IOException("Gun should not be deserialized as standalone GameObject");
+            case ROCKET_GUN_POWERUP -> {
+                return new RocketGunPowerup(world, x, y);
+            }
+            case HEALTH_POWERUP -> {
+                return new HealthPowerup(world, x, y);
+            }
+            case SPEED_POWERUP -> {
+                return new SpeedPowerup(world, x, y);
+            }
+            default -> throw new IOException("Unknown GameObject type: " + type);
+        }
     }
 
-    public List<GameObject> deserializeAll(SocketChannel channel) {
-        return null;
+    private void readFully(SocketChannel channel, ByteBuffer buffer) throws IOException {
+        while (buffer.hasRemaining()) {
+            if (channel.read(buffer) == -1) {
+                throw new IOException("Connection closed prematurely");
+            }
+        }
+        buffer.flip();
     }
 }

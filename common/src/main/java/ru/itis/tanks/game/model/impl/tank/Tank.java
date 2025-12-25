@@ -5,6 +5,7 @@ import lombok.Setter;
 import ru.itis.tanks.game.model.*;
 import ru.itis.tanks.game.model.impl.IdManager;
 import ru.itis.tanks.game.model.impl.Texture;
+import ru.itis.tanks.game.model.impl.weapon.DefaultGun;
 import ru.itis.tanks.game.model.map.GameWorld;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -28,7 +29,8 @@ public class Tank extends MovingObject implements Destroyable {
 
     private long lastShootTime;
 
-    private final String username;
+    @Setter
+    private String username;
 
     @Setter
     private boolean currentPlayerTank;
@@ -45,6 +47,7 @@ public class Tank extends MovingObject implements Destroyable {
         this(world, IdManager.getNextId(), DEFAULT_MAX_XP, DEFAULT_VELOCITY,
                 Direction.UP, Texture.PLAYER_TANK, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT);
     }
+
     public Tank(GameWorld world, int id, int maxHp, int hp, long lastShootTime, Gun gun, int velocity, Direction direction,
                 Texture texture, int x, int y, int width, int height) {
         super(world, id, velocity, direction, false, texture, x, y, width, height);
@@ -54,6 +57,12 @@ public class Tank extends MovingObject implements Destroyable {
         this.gun = gun;
         currentPlayerTank = false;
         this.username = "bot";
+        initGun();
+    }
+
+    private void initGun(){
+        if(gun == null)
+            setGun(new DefaultGun(this));
     }
 
     @Override

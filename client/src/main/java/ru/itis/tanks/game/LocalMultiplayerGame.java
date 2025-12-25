@@ -1,7 +1,7 @@
 package ru.itis.tanks.game;
 
 import lombok.Getter;
-import ru.itis.tanks.game.controller.AITank;
+import ru.itis.tanks.game.model.impl.tank.AITank;
 import ru.itis.tanks.game.controller.AlternativeTankKeyHandler;
 import ru.itis.tanks.game.controller.TankKeyHandler;
 import ru.itis.tanks.game.model.impl.Texture;
@@ -13,7 +13,7 @@ import ru.itis.tanks.game.model.map.updates.GameEvent;
 import ru.itis.tanks.game.model.map.updates.GameEventListener;
 import ru.itis.tanks.game.model.map.updates.GameEventType;
 import ru.itis.tanks.game.ui.GameWindow;
-import ru.itis.tanks.game.ui.panels.GameWorldPanel;
+import ru.itis.tanks.game.ui.panels.GameWorldRenderer;
 
 import java.util.List;
 
@@ -45,8 +45,8 @@ public class LocalMultiplayerGame implements GameEventListener {
     }
 
     public void startGame() {
-        GameWorldPanel gameRenderer =
-                new GameWorldPanel(gameWorld.getAllObjects(), gameWorld.getWidth(), gameWorld.getHeight());
+        GameWorldRenderer gameRenderer =
+                new GameWorldRenderer(gameWorld);
         gameWindow.changePanel(gameRenderer);
         List<ServerTankController> tankControllers = gameWorld.getTanks().values().stream()
                 .map(ServerTankController::new)

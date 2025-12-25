@@ -12,8 +12,6 @@ import java.net.UnknownHostException;
 @RequiredArgsConstructor
 public class ServerStarter {
 
-    private final ServerView serverView;
-
     public static void main(String[] args) {
         ServerView view = new ServerConsoleView();
         boolean flag = true;

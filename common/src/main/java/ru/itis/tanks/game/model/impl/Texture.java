@@ -28,4 +28,8 @@ public enum Texture {
     public static Texture fromInt(int i) {
         return Texture.values()[i];
     }
+
+    public static Texture fromCode(int textureCode) {
+        return Texture.values()[textureCode];
+    }
 }

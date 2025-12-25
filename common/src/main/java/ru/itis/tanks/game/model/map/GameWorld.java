@@ -8,6 +8,7 @@ import ru.itis.tanks.game.model.map.updates.GameEventDispatcher;
 import ru.itis.tanks.game.model.map.updates.GameEventListener;
 import ru.itis.tanks.network.Position;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,8 @@ public class GameWorld implements GameEventDispatcher{
 
     private final Map<Integer, Tank> tanks;
 
+    private final Map<Integer, Identifiable> identifiables;
+
     private final List<GameEventListener> listeners;
 
     private final CollisionHandler collisionHandler;
@@ -41,8 +44,9 @@ public class GameWorld implements GameEventDispatcher{
         this.height = height;
         listeners = new CopyOnWriteArrayList<>();
         allObjects = new CopyOnWriteArrayList<>();
-        updatables = new LinkedHashMap<>();
+        updatables = new ConcurrentHashMap<>();
         tanks = new LinkedHashMap<>();
+        identifiables = new HashMap<>();
         collisionHandler = new CollisionHandler(this);
     }
 
@@ -53,6 +57,8 @@ public class GameWorld implements GameEventDispatcher{
             collisionHandler.addToGrid(collideable, object.getX(), object.getY());
         if(object instanceof Tank tank)
             tanks.put(tank.getId(), tank);
+        if(object instanceof Identifiable identifiable)
+            identifiables.put(identifiable.getId(), identifiable);
         allObjects.add(object);
         notifyWorldUpdate(new GameEvent(object, ADDED_OBJECT));
     }
@@ -64,6 +70,8 @@ public class GameWorld implements GameEventDispatcher{
             collisionHandler.removeFromGrid(object.getX(), object.getY(), (Collideable) object);
         if(object instanceof Tank tank)
             tanks.remove(tank.getId());
+        if(object instanceof Identifiable identifiable)
+            identifiables.remove(identifiable.getId());
         allObjects.remove(object);
         notifyWorldUpdate(new GameEvent(object, REMOVED_OBJECT));
         if(tanks.size() == 1)
@@ -85,11 +93,12 @@ public class GameWorld implements GameEventDispatcher{
     }
 
     public void removeObject(int id) {
-        removeObject(updatables.get(id));
+        removeObject(identifiables.get(id));
     }
 
     public void updateObject(GameObject obj) {
-        //todo
+        removeObject(obj);
+        addObject(obj);
     }
 
     public Position getSpawnPosition() {

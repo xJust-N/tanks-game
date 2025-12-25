@@ -16,12 +16,22 @@ public class ClientManager {
 
     private final SocketChannel channel;
 
+    private final String username;
+
     private final ServerTankController controller;
+
 
     public ClientManager(SocketChannel channel, Tank tank){
         this.id = tank.getId();
         this.channel = channel;
         this.controller = new ServerTankController(tank);
+        this.username = "unknown";
     }
 
+    public ClientManager(SocketChannel clientChannel, String username, Tank tank) {
+        this.id = tank.getId();
+        this.channel = clientChannel;
+        this.username = username;
+        this.controller = new ServerTankController(tank);
+    }
 }

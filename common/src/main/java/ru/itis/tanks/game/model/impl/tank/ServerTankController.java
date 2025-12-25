@@ -15,7 +15,6 @@ public class ServerTankController implements TankController {
 
     private final Queue<Command> commandQueue = new ArrayDeque<>();
 
-    @Getter
     private Direction direction;
 
     public ServerTankController(Tank tank, Direction direction) {
@@ -30,10 +29,12 @@ public class ServerTankController implements TankController {
     }
 
     public void setDirection(Direction direction) {
-            if (direction != null) {
-                this.direction = direction;
-                tank.setDirection(direction);
-            }
+        switch (direction) {
+            case UP -> enqueueCommand(Command.UP);
+            case DOWN -> enqueueCommand(Command.DOWN);
+            case LEFT -> enqueueCommand(Command.LEFT);
+            case RIGHT -> enqueueCommand(Command.RIGHT);
+        }
     }
 
     public void enqueueCommand(Command command) {
@@ -48,7 +49,16 @@ public class ServerTankController implements TankController {
                 case Command.START_MOVING -> tank.setMoving(true);
                 case Command.STOP_MOVING -> tank.setMoving(false);
                 case Command.SHOOT -> tank.shoot();
+                case UP -> tank.setDirection(Direction.UP);
+                case DOWN -> tank.setDirection(Direction.DOWN);
+                case LEFT -> tank.setDirection(Direction.LEFT);
+                case RIGHT -> tank.setDirection(Direction.RIGHT);
             }
         }
+    }
+
+    @Override
+    public boolean hasCommands() {
+        return !commandQueue.isEmpty();
     }
 }

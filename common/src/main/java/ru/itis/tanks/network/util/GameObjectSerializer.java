@@ -16,7 +16,6 @@ import java.nio.ByteBuffer;
 
 import static ru.itis.tanks.network.GameObjectType.*;
 
-//TODO пересылка isMoving, команды и дельты или только координат с отдельным клиенским миром
 /* Общее
 * [type-code][texture][x][y][w][h]
 *   Для двигающегося
@@ -66,7 +65,6 @@ public class GameObjectSerializer {
             case Projectile projectile ->{
                 buffer.put(0, (byte) PROJECTILE.getCode());
                 buffer.putInt(projectile.getTank().getId());
-                buffer.putInt(projectile.getVelocity());
                 buffer.putInt(projectile.getDamage());
             }
             default -> throw new IOException("Unexpected value: " + object);
@@ -88,10 +86,10 @@ public class GameObjectSerializer {
     private void serializeGun(Gun gun, ByteBuffer buffer) throws IOException {
         switch (gun){
             case DefaultGun _ ->{
-                buffer.put(0, (byte) DEFAULT_GUN.getCode());
+                buffer.put((byte) DEFAULT_GUN.getCode());
             }
             case RocketGun _ ->{
-                buffer.put(0, (byte) ROCKET_GUN.getCode());
+                buffer.put((byte) ROCKET_GUN.getCode());
             }
             default -> throw new IOException("Unexpected value: " + gun);
         }
