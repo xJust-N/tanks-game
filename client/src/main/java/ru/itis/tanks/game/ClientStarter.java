@@ -1,0 +1,88 @@
+package ru.itis.tanks.game;
+
+import ru.itis.tanks.game.ui.GameWindow;
+import ru.itis.tanks.game.ui.model.GameMode;
+import ru.itis.tanks.game.ui.model.Registration;
+import ru.itis.tanks.game.ui.panels.GameModeSelectPanel;
+import ru.itis.tanks.game.ui.panels.RegistrationPanel;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+public class ClientStarter implements RegistrationListener, GameModeSelectListener {
+
+    private final GameWindow gameWindow;
+
+    public ClientStarter() {
+        gameWindow = new GameWindow(new GameModeSelectPanel(this));
+    }
+
+    public static void main(String[] args) {
+        new ClientStarter();
+    }
+
+    @Override
+    public void onGameModeSelected(GameMode gameMode) {
+        switch (gameMode) {
+            case LOCAL_MULTIPLAYER -> {
+                LocalMultiplayerGame game = new LocalMultiplayerGame(gameWindow);
+                new Thread(game::startGame).start();
+            }
+            case JOIN_GAME -> gameWindow.changePanel(new RegistrationPanel(this));
+        }
+    }
+
+    @Override
+    public void onRegistration(Registration reg) {
+        String username = reg.getUsername();
+        String hostStr = reg.getHost();
+        int port;
+        try {
+            port = parsePort(reg.getPort());
+        } catch (IllegalArgumentException e) {
+            onError(e.getMessage());
+            return;
+        }
+        InetSocketAddress host;
+        try {
+            if ("localhost".equals(hostStr) || hostStr.isBlank())
+                host = new InetSocketAddress(InetAddress.getLocalHost(), port);
+            else
+                host = new InetSocketAddress(InetAddress.getByName(hostStr), port);
+        } catch (UnknownHostException e) {
+            onError("Unknown host, try again");
+            return;
+        }
+        gameWindow.setTitle("Tanks game - %s".formatted(username));
+        SocketGameClient client = new SocketGameClient(gameWindow, username);
+        new Thread(() -> {
+            try {
+                client.start(host);
+            } catch (IOException e) {
+                onError(e.toString());
+                gameWindow.changePanel(new GameModeSelectPanel(this));
+                Thread.currentThread().interrupt();
+            }
+        }).start();
+    }
+
+    private void onError(String er) {
+        gameWindow.showError(er);
+    }
+
+    private int parsePort(String portStr) throws IllegalArgumentException {
+        int port;
+        try {
+            port = Integer.parseInt(portStr);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Port is incorrect");
+        }
+        if (port < 0 || port > 65535)
+            throw new IllegalArgumentException("Port must be between 0 and 65535");
+        return port;
+    }
+
+}
