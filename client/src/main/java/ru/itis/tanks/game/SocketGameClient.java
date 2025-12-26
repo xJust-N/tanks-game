@@ -11,6 +11,7 @@ import ru.itis.tanks.game.model.map.GameWorld;
 import ru.itis.tanks.game.model.map.updates.GameEvent;
 import ru.itis.tanks.game.model.map.updates.GameEventType;
 import ru.itis.tanks.game.ui.GameWindow;
+import ru.itis.tanks.game.ui.panels.GameOverPanel;
 import ru.itis.tanks.game.ui.panels.GameWorldRenderer;
 import ru.itis.tanks.network.ChannelMessageType;
 import ru.itis.tanks.network.ChannelReader;
@@ -28,11 +29,13 @@ import java.util.Iterator;
 
 public class SocketGameClient {
 
-    private static final int UPDATE_INTERVAL_MS = 16;
+    private static final int WINDOW_UPDATE_INTERVAL_MS = 16;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final Thread updateThread;
+    private final Thread windowThread;
+
+    private final Thread commandSenderThread;
 
     private final GameWindow gameWindow;
 
@@ -57,7 +60,8 @@ public class SocketGameClient {
         this.username = username;
         this.reader = new ChannelReader(new GameObjectDeserializer());
         this.writer = new ChannelWriter(new GameObjectSerializer());
-        this.updateThread = new Thread(this::updateLoop);
+        this.windowThread = new Thread(this::updateWindowLoop);
+        this.commandSenderThread = new Thread(this::sendCommandsLoop);
     }
 
     public void start(InetSocketAddress socketAddress) throws IOException {
@@ -71,7 +75,14 @@ public class SocketGameClient {
         gameWindow.addKeyListener(
                 new TankKeyHandler(tankController));
         isRunning = true;
-        run();
+        try {
+            run();
+        } catch (IOException e){
+            logger.info("Connection closed: {}", e.getMessage());
+            throw new IOException(e);
+        } finally {
+            stopAndCleanup();
+        }
     }
 
     private void run() throws IOException {
@@ -109,7 +120,8 @@ public class SocketGameClient {
                     GameWorldRenderer renderer = new GameWorldRenderer(world);
                     world.addWorldUpdateListener(renderer);
                     gameWindow.changePanel(renderer);
-                    updateThread.start();
+                    windowThread.start();
+                    commandSenderThread.start();
                     logger.debug("Renderer created and panel changed");
 
                 }
@@ -151,7 +163,7 @@ public class SocketGameClient {
                     logger.debug("Successfully updated entity");
                 }
                 case GAME_OVER -> {
-                    //todo
+                    gameWindow.changePanel(new GameOverPanel(this));
                     }
                 default -> logger.warn("Unsupported type: {}", type);
             }
@@ -173,15 +185,40 @@ public class SocketGameClient {
         }
     }
 
-    private void updateLoop() {
-        logger.debug("Started update thread");
-        while (isRunning) {
-            if (tankController.hasCommands()) {
-                logger.debug("Writing commands");
-                tankController.processCommands();
-                logger.debug("Sent commands");
-            }
+    //Цикл для обновления экрана
+    private void updateWindowLoop() {
+        logger.debug("Started window thread");
+        while (isRunning && windowThread.isAlive() && !Thread.currentThread().isInterrupted()) {
             gameWindow.update();
+            try {
+                Thread.sleep(WINDOW_UPDATE_INTERVAL_MS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        logger.debug("Stopped window thread");
+    }
+
+    //Цикл для отправки команд в отдельном потоке
+    //Используется блокирующая очередь чтобы не нагружать
+    private void sendCommandsLoop(){
+        logger.debug("Starting commands loop");
+        while (isRunning && windowThread.isAlive() && !Thread.currentThread().isInterrupted()) {
+            tankController.processCommands();
+        }
+        logger.debug("Stopped update thread");
+    }
+
+    public void stopAndCleanup() {
+        isRunning = false;
+        try {
+            windowThread.interrupt();
+            if(socketChannel != null)
+                socketChannel.close();
+            if(selector != null)
+                selector.close();
+        } catch (IOException e) {
+            //ignore
         }
     }
 }

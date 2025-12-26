@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static ru.itis.tanks.game.model.map.updates.GameEventType.*;
 
-//Todo game over update(один побеждает, другой проигрывает)
 @Getter
 public class GameWorld implements GameEventDispatcher{
 
@@ -145,7 +144,10 @@ public class GameWorld implements GameEventDispatcher{
     }
 
     public Position getSpawnPosition() {
-        //todo
-        return new Position(width/2, height/2);
+        Random random = new Random();
+        int absBorder = 30;
+        return new Position(
+                width/2 - absBorder + random.nextInt(absBorder * 2),
+                height/2 - absBorder + random.nextInt(absBorder * 2));
     }
 }

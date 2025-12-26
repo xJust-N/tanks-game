@@ -56,7 +56,6 @@ public class SelectorSocketServer implements GameEventListener {
         logger.info("Starting socket server");
         world = GameWorldGenerator.generate();
         world.getTanks().values().forEach(t -> controllers.add(new ServerTankController(t)));
-        startBotTanksThreads();
         world.addWorldUpdateListener(this);
         selector = Selector.open();
         serverChannel = ServerSocketChannel.open();
@@ -65,10 +64,6 @@ public class SelectorSocketServer implements GameEventListener {
         serverChannel.register(selector, SelectionKey.OP_ACCEPT);
         logger.debug("Listening on {}", address);
         run();
-    }
-
-    private void startBotTanksThreads() {
-       //controllers.forEach(controller -> new AITank(controller).start());
     }
 
     private void run() {
@@ -91,8 +86,9 @@ public class SelectorSocketServer implements GameEventListener {
                             clients.remove(id);
                             world.removeObject(clientTank);
                             logger.debug("Cleaned up from client disconnection");
-                            //running = !clients.values().isEmpty();
+                            running = !clients.values().isEmpty();
                         }
+                        key.cancel();
                     }
                 }
             } catch (IOException e) {
@@ -111,7 +107,7 @@ public class SelectorSocketServer implements GameEventListener {
                 try {
                     registerNewSelectorChannel(clientChannel);
                 } catch (ClosedChannelException e) {
-                    logger.debug("Registration failed, connection closed");
+                    logger.debug("Connection closed");
                     clientChannel.close();
                     throw e;
                 } catch (IOException e) {
@@ -125,7 +121,11 @@ public class SelectorSocketServer implements GameEventListener {
         if (key.isReadable()) {
             try {
                 handleRead(key);
-            } catch (IOException e) {
+            } catch (EOFException | ClosedChannelException e) {
+                logger.debug("Client closed connection");
+                throw e;
+            }
+             catch (IOException e) {
                 logger.error("Failed to handle read", e);
                 throw e;
             }
@@ -160,7 +160,7 @@ public class SelectorSocketServer implements GameEventListener {
         Position spawnPos = world.getSpawnPosition();
         Tank tank = new Tank(world, spawnPos.getX(), spawnPos.getY());
         tank.setUsername(username);
-        ClientManager client = new ClientManager(clientChannel, username, tank);
+        ClientManager client = new ClientManager(clientKey, username, tank);
         sendWorldToClient(clientChannel);
         clientKey.attach(tank.getId());
         clients.put(tank.getId(), client);
@@ -251,6 +251,7 @@ public class SelectorSocketServer implements GameEventListener {
         }
     }
 
+    //цикл обновления мира для отдельного потока
     private void updateLoop(){
         logger.info("Started world update loop");
         long lastUpdateTime = System.currentTimeMillis();

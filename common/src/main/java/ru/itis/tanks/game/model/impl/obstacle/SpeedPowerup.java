@@ -19,7 +19,7 @@ public class SpeedPowerup extends AbstractCollectable {
     }
 
     public SpeedPowerup(GameWorld world, int id, int x, int y) {
-        super(world, id, DEFAULT_WIDTH, DEFAULT_HEIGHT, x, y, Texture.SPEED_POWERUP);
+        super(world, id, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, Texture.SPEED_POWERUP);
     }
 
     @Override

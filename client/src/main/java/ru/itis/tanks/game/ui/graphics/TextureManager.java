@@ -33,9 +33,6 @@ public class TextureManager {
 
     public BufferedImage getTexture(Texture texture) {
         BufferedImage result = images.get(texture);
-        //todo убрать это потом
-//        if(result == null)
-//            System.out.printf("Нету текстуры для %s%n", texture);
         return result != null ? result : missingTexture;
     }
 
@@ -72,7 +69,6 @@ public class TextureManager {
     private void loadImages() {
         for(Texture texture : files.keySet()) {
             try {
-                //fixme хз так можно или нет но работает
                 URL resource = this.getClass().getResource(PATH_PREFIX + files.get(texture));
                 if(resource == null)
                     throw new IOException("File %s for image %s not found"

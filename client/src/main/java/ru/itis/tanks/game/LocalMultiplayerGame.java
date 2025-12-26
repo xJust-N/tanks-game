@@ -15,6 +15,7 @@ import ru.itis.tanks.game.model.map.updates.GameEventType;
 import ru.itis.tanks.game.ui.GameWindow;
 import ru.itis.tanks.game.ui.panels.GameWorldRenderer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class LocalMultiplayerGame implements GameEventListener {
@@ -48,19 +49,26 @@ public class LocalMultiplayerGame implements GameEventListener {
         GameWorldRenderer gameRenderer =
                 new GameWorldRenderer(gameWorld);
         gameWindow.changePanel(gameRenderer);
-        List<ServerTankController> tankControllers = gameWorld.getTanks().values().stream()
+        List<ServerTankController> tankControllers = new ArrayList<>(
+                gameWorld.getTanks().values().stream()
                 .map(ServerTankController::new)
-                .toList();
-        gameWindow.addKeyListener(new TankKeyHandler(tankControllers.get(0)));
-        gameWindow.addKeyListener(new AlternativeTankKeyHandler(tankControllers.get(1)));
-        Tank firstPlayerTank = tankControllers.get(0).getTank();
+                .toList());
+        tankControllers.forEach(c -> new AITank(c).start());
+
+        Tank firstPlayerTank = new Tank(gameWorld, gameWorld.getWidth() / 2 - 20, gameWorld.getHeight() / 2);
         firstPlayerTank.setTexture(Texture.PLAYER_TANK);
-        Tank secondPlayerTank = tankControllers.get(1).getTank();
+        tankControllers.add(new ServerTankController(firstPlayerTank));
+        gameWindow.addKeyListener(new TankKeyHandler(tankControllers.getLast()));
+
+        Tank secondPlayerTank = new Tank(gameWorld, gameWorld.getWidth() / 2 + 20, gameWorld.getHeight() / 2);
         secondPlayerTank.setTexture(Texture.PLAYER_TANK);
+        tankControllers.add(new ServerTankController(secondPlayerTank));
+        gameWindow.addKeyListener(new AlternativeTankKeyHandler(tankControllers.getLast()));
+
+        gameWorld.addObject(firstPlayerTank);
+        gameWorld.addObject(secondPlayerTank);
+
         gameRenderer.updateGraphicalComponents();
-        for(int i = 2; i < tankControllers.size(); i++) {
-            new AITank(tankControllers.get(i)).start();
-        }
         gameWorld.addWorldUpdateListener(gameRenderer);
         isRunning = true;
         windowThread.start();

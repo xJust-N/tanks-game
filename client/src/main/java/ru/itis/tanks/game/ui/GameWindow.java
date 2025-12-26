@@ -27,9 +27,8 @@ public class GameWindow extends JFrame {
     }
 
     public void update() {
+        repaint();
         currentPanel.repaint();
-        if(currentPanel instanceof GameWorldRenderer renderer)
-            renderer.refresh();
     }
 
     public void changePanel(JPanel panel) {

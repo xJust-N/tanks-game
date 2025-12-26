@@ -6,15 +6,19 @@ import ru.itis.tanks.game.model.impl.tank.Command;
 import ru.itis.tanks.game.model.impl.tank.TankController;
 import ru.itis.tanks.network.ChannelWriter;
 
+import java.io.IO;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayDeque;
 import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 @RequiredArgsConstructor
 public class ClientTankController implements TankController {
 
-    private final Queue<Command> commands = new ArrayDeque<>();
+    private final BlockingQueue<Command> commands = new LinkedBlockingQueue<>();
 
     private final SocketChannel channel;
 
@@ -37,12 +41,11 @@ public class ClientTankController implements TankController {
 
     @Override
     public void processCommands() {
-        if(commands.isEmpty())
-            return;
         try {
-            writer.writeCommand(channel, commands.poll());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            Command command = commands.take();
+            writer.writeCommand(channel, command);
+        } catch (InterruptedException | IOException e) {
+            Thread.currentThread().interrupt();
         }
     }
 

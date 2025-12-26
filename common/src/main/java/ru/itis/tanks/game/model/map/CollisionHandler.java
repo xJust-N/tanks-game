@@ -117,6 +117,7 @@ public class CollisionHandler {
         } else if (secondObj instanceof Collectable collectable) {
             collectable.onTankCollect(tank);
             collectable.remove();
+            dispatcher.notifyWorldUpdate(new GameEvent(tank, MODIFIED_OBJECT));
             return;
         }
         Direction offsetDir = tank.getDirection().opposite();

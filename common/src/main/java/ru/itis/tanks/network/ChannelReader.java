@@ -70,6 +70,8 @@ public class ChannelReader {
         readFully(channel, sizeBuffer);
         int w = sizeBuffer.getInt();
         int h = sizeBuffer.getInt();
+        GameWorld world = new GameWorld(w, h);
+        deserializer.setWorld(world);
         ByteBuffer countBuffer = ByteBuffer.allocate(4);
         readFully(channel, countBuffer);
         int count = countBuffer.getInt();
@@ -79,9 +81,7 @@ public class ChannelReader {
             logger.debug("Object read: {}", obj.toString());
             objects.add(obj);
         }
-        GameWorld world = new GameWorld(w, h);
         objects.forEach(world::addObject);
-        deserializer.setWorld(world);
         logger.info("Game world read: {}x{}, objects: {} from channel: {}",
                 w, h, objects.size(), channel.getRemoteAddress());
         return world;
