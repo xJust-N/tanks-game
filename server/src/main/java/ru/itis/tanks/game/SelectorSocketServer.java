@@ -31,7 +31,7 @@ public class SelectorSocketServer implements GameEventListener {
 
     private final Thread gameUpdateThread;
 
-    private final Map<Integer, ClientManager> clients;
+    private final Map<Integer, ClientHandler> clients;
 
     private final ChannelReader reader;
 
@@ -140,7 +140,7 @@ public class SelectorSocketServer implements GameEventListener {
             logger.error("Client id is null for key {}", key);
             throw new EOFException("Client did not register");
         }
-        ClientManager client = clients.get(id);
+        ClientHandler client = clients.get(id);
         if (client == null) {
             logger.error("Client not found for id {}", id);
             throw new EOFException("Client not found");
@@ -160,7 +160,7 @@ public class SelectorSocketServer implements GameEventListener {
         Position spawnPos = world.getSpawnPosition();
         Tank tank = new Tank(world, spawnPos.getX(), spawnPos.getY());
         tank.setUsername(username);
-        ClientManager client = new ClientManager(clientKey, username, tank);
+        ClientHandler client = new ClientHandler(clientKey, username, tank);
         sendWorldToClient(clientChannel);
         clientKey.attach(tank.getId());
         clients.put(tank.getId(), client);
@@ -184,7 +184,7 @@ public class SelectorSocketServer implements GameEventListener {
 
     private void sendGameOverToClients() {
         logger.debug("Sending game over");
-        for (ClientManager c : clients.values()) {
+        for (ClientHandler c : clients.values()) {
             try {
                 writer.writeGameOverMessage(c.getChannel());
             } catch (IOException e) {
@@ -196,7 +196,7 @@ public class SelectorSocketServer implements GameEventListener {
     private void sendObjectUpdateToClients(GameObject obj) {
         logger.debug("Sending object update to clients");
         int i = 0;
-        for (ClientManager c : clients.values()) {
+        for (ClientHandler c : clients.values()) {
             try {
                 writer.writeObjectUpdate(c.getChannel(), obj);
                 i+=1;
@@ -214,7 +214,7 @@ public class SelectorSocketServer implements GameEventListener {
     private void sendNewObjectToClients(GameObject obj){
         logger.debug("Sending new object to clients");
         int i = 0;
-        for (ClientManager c : clients.values()) {
+        for (ClientHandler c : clients.values()) {
             try {
                 writer.writeNewObject(c.getChannel(), obj);
                 i+=1;
@@ -230,7 +230,7 @@ public class SelectorSocketServer implements GameEventListener {
     }
 
     private void sendMoveToClients(MovingObject obj) {
-        for (ClientManager c : clients.values()) {
+        for (ClientHandler c : clients.values()) {
             try {
                 writer.writePosition(
                         c.getChannel(), obj.getId(), obj.getDirection(), obj.getX(), obj.getY());
@@ -242,7 +242,7 @@ public class SelectorSocketServer implements GameEventListener {
 
     private void sendIdToClients(int id) {
         logger.debug("Sending id to client");
-        for (ClientManager c : clients.values()) {
+        for (ClientHandler c : clients.values()) {
             try {
                 writer.writeId(c.getChannel(), id);
             } catch (IOException e) {

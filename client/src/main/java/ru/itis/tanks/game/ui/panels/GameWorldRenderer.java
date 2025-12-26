@@ -17,6 +17,10 @@ import java.util.List;
 
 public class GameWorldRenderer extends JPanel implements GameEventListener {
 
+    private static final int OFFSET_X = 16;
+
+    private static final int OFFSET_Y = 32;
+
     private final GameWorld world;
 
     private List<GraphicalComponent> graphicalComponents;
@@ -28,7 +32,7 @@ public class GameWorldRenderer extends JPanel implements GameEventListener {
     }
     private void init() {
         setPreferredSize(
-                new Dimension(world.getWidth(), world.getHeight())
+                new Dimension(world.getWidth() + OFFSET_X, world.getHeight() + OFFSET_Y)
         );
         setVisible(true);
         setBackground(Color.GRAY);

@@ -1,7 +1,5 @@
 package ru.itis.tanks.game.ui;
 
-import ru.itis.tanks.game.ui.panels.GameWorldRenderer;
-
 import javax.swing.*;
 import java.awt.HeadlessException;
 

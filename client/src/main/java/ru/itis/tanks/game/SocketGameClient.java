@@ -134,7 +134,7 @@ public class SocketGameClient {
                     }
                     Updatable obj = world.getUpdatables().get(pos.getEntityId());
                     if(obj == null){
-                        logger.warn("Object doesn't exist, cannot update position");
+                        logger.debug("Object doesn't exist, cannot update position");
                         return;
                     }
                     obj.setX(pos.getX());

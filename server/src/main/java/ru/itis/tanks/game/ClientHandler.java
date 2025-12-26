@@ -4,14 +4,13 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import ru.itis.tanks.game.model.impl.tank.ServerTankController;
 import ru.itis.tanks.game.model.impl.tank.Tank;
-import ru.itis.tanks.game.model.impl.tank.TankController;
 
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
 @RequiredArgsConstructor
 @Getter
-public class ClientManager {
+public class ClientHandler {
 
     private final int id;
 
@@ -21,7 +20,7 @@ public class ClientManager {
 
     private final ServerTankController controller;
 
-    public ClientManager(SelectionKey key, String username, Tank tank) {
+    public ClientHandler(SelectionKey key, String username, Tank tank) {
         this.id = tank.getId();
         this.key = key;
         this.username = username;
